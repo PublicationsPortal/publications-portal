@@ -8,150 +8,262 @@
  * Add here all the overridden components of your app.
  */
 
-import { Grid, Select, Input, Button, Form as SemanticForm } from "semantic-ui-react";
-import React, {Component} from "react"
+import { Grid, Select, Input, Button, Form as SemanticForm, Header, Icon } from "semantic-ui-react";
+import React, { Component } from "react"
 import { Formik, Form, Field, FieldArray } from 'formik';
 
-function Search (props) {
-  const {
-    actionProps,
-    onBtnSearchClick,
-    onInputChange,
-    onKeyPress,
-    overridableId,
-    placeholder,
-    queryString,
-    uiProps,
-  } = props;
+const decodeSearchFromURL = (queryString) => {
+  const searchArray = [];
+  const searchTerms = queryString.split(/\s+/);
+  for (let term of searchTerms) {
+    let field = 'all', value, operator, type;
+    if (term.includes(':')) {
+      [field, value] = term.split(':');
+      operator = field.startsWith('+') ? 'AND' : 'OR';
+      field = field.replace(/^\+/, '')
 
-  const searchType = [
-    { key: 'all', text: 'All', value: 'all' },
-    { key: 'any', text: 'Any of the words', value: 'any' },
-  ]
+      value = value.replace(/(^\(+|\)+$)/g, '').trim(" ");
+      type = value.startsWith('+') ? 'exact' : 'any';
+      value = value.replace(/^\+/, '');
+    }
+    else {
+      value = term
+      operator = value.startsWith('+') ? 'AND' : 'OR';
+      value = value.replace(/^\+/, '');
 
-  const searchFields = [
-    { key: 'all', text: 'All', value: 'all' },
-    { key: 'title', text: 'Title', value: 'metadata.title' },
-    { key: 'author', text: 'Author', value: 'metadata.author' },
-  ]
+      value = value.replace(/(^\(+|\)+$)/g, '').trim(" ");
+      type = value.startsWith('+') ? 'exact' : 'any';
+      value = value.replace("+", '');
+    }
+    searchArray.push({ type, field, operator, value });
+  }
 
-  const searchOperator = [
-    { key: 'AND', text: 'And', value: 'AND' },
-    { key: 'OR', text: 'Or', value: 'OR' },
-  ]
+  return { searches: searchArray };
+};
+const defaultSearchValue = { type: 'exact', field: 'all', operator: 'AND', value: '' }
+
+const searchTypes = [
+  { key: 'exact', text: 'Exact', value: 'exact' },
+  { key: 'any', text: 'Any of the words', value: 'any' },
+]
+
+const searchFields = [
+  { key: 'all', text: 'All', value: 'all' },
+  { key: 'title', text: 'Title', value: 'metadata.title' },
+  { key: 'author', text: 'Author', value: 'metadata.creators.person_or_org.name' },
+  { key: 'description', text: 'Description', value: 'metadata.description' },
+  // { key: 'date', text: 'Date', value: 'metadata.publication_date' },
+]
+
+const searchOperators = [
+  { key: 'AND', text: 'And', value: 'AND' },
+  { key: 'OR', text: 'Or', value: 'OR' },
+]
+
+const appendSearchType = (term, type) => {
+  switch (type) {
+    case "exact":
+      return `(${term.split(" ").map(t => `+${t}`).join(" ")})`
+    case "any":
+      return `(${term})`
+    default:
+      return `(${term})`
+  }
+}
+
+const appendSearchField = (term, field) => {
+  if (field == "all") return term
+  else {
+    return `${field}:${term}`
+  }
+}
+
+const appendSearchOperator = (term1, term2, operator) => {
+  switch (operator) {
+    case "AND":
+      return `${term1} +${term2}`
+    case "OR":
+      return `${term1} ${term2}`
+    default:
+      return `${term1} ${term2}`
+  }
+}
+
+function Search(props) {
+  const initialDefaultValues = {
+    searches: [defaultSearchValue]
+  }
+
+  const [initialValues, setInitialValues] = React.useState()
+
+  React.useEffect(() => {
+    if (props.queryString) {
+      const decodedSearch = decodeSearchFromURL(props.queryString);
+      setInitialValues(decodedSearch);
+    }
+    else {
+      setInitialValues(initialDefaultValues);
+    }
+  }, [])
+
 
   const handleSearchSubmit = values => {
     let search = ""
-    values.searches.forEach(searchItem => {
-      search += `${searchItem.field == 'all' ? '' : searchItem.field}:${searchItem.value}
-       ${searchItem.operator}`;
-    });
-    search = search.replace(/(AND|OR)\s*$/, '');
-    search = search.trim();
-    console.log({search})
-    onInputChange(search);
-    onBtnSearchClick();
+    values.searches.forEach((searchItem) => {
+      if (searchItem.value == "") return
+      const seachAfterAppendingField = appendSearchField(
+        appendSearchType(
+          searchItem.value,
+          searchItem.type
+        ),
+        searchItem.field
+      )
+
+      if (search == "") {
+        search = seachAfterAppendingField
+      } else {
+        search = appendSearchOperator(
+          search,
+          seachAfterAppendingField,
+          searchItem.operator
+        )
+      }
+    })
+    props.onInputChange(search);
+    props.onBtnSearchClick();
+
+    // initializeValues()
   }
 
-  const initialValues = {
-    searches: [
-      { type: 'all', field: 'all', operator: 'AND', value: '' },
-    ]
-  }
+  if (!initialValues)
+    return null
 
   return (
-    
-        <Formik
-          initialValues={initialValues}
-          onSubmit={handleSearchSubmit}
-          render={({ values }) => (
-            <Form>
-              <Grid centered divided="vertically">
-              <FieldArray
-                name="searches"
-                render={arrayHelpers => (
-                  <>
-                    {values.searches && values.searches.length > 0 ? (
-                      values.searches.map((search, index) => (
-                        <Grid.Row key={index}>
-                          <Grid.Column width={2}>
-                            <Field as="select" name={`searches.${index}.type`}>
-                              {searchType.map((type) => (
-                                <option key={type.key} value={type.value}>
-                                  {type.text}
-                                </option>
-                              ))}
-                            </Field>
-                          </Grid.Column>
+    <Formik
+      initialValues={initialValues}
+      enableReinitialize
+      onSubmit={handleSearchSubmit}
+      render={({ setFieldValue, values }) => {
+        return (
+          <Form className="ui form" action="#">
+            <FieldArray
+              name="searches"
+              render={arrayHelpers => (
+                <>
+                  <SemanticForm.Group>
+                    {
+                      values.searches.length > 1 ? (
+                        <SemanticForm.Field width={2}>
+                          <Header as='h4' dividing>
+                            Operator
+                          </Header>
+                        </SemanticForm.Field>
+                      ) : (
+                        <SemanticForm.Field width={2}>
+                          <Header as='h4'></Header>
+                        </SemanticForm.Field>
+                      )
+                    }
 
-                          <Grid.Column width={4}>
-                            <Field as={SemanticForm.Input} name={`searches.${index}.value`} fluid placeholder="Type here..." />
-                          </Grid.Column>
+                    <SemanticForm.Field width={2}>
+                      <Header as='h4' dividing>
+                        Field
+                      </Header>
+                    </SemanticForm.Field>
 
-                          <Grid.Column width={2}>
-                            <Field as="select" name={`searches.${index}.field`}>
-                              {searchFields.map((type) => (
-                                <option key={type.key} value={type.value}>
-                                  {type.text}
-                                </option>
-                              ))}
-                            </Field>
-                          </Grid.Column>
+                    <SemanticForm.Field width={2}>
+                      <Header as='h4' dividing>
+                        Contains
+                      </Header>
+                    </SemanticForm.Field>
 
-                          <Grid.Column width={2}>
-                            <Field as="select" name={`searches.${index}.operator`}>
-                              {searchOperator.map((type) => (
-                                <option key={type.key} value={type.value}>
-                                  {type.text}
-                                </option>
-                              ))}
-                            </Field>
-                          </Grid.Column>
-                                
-                          <Grid.Column width={1}>
-                            <Button 
-                              onClick={() => arrayHelpers.remove(index)} 
-                              type="button"
-                            >
-                              X
-                            </Button>
-                          </Grid.Column>
+                    <SemanticForm.Field width={8}>
+                      <Header as='h4' dividing>
+                        Search Text
+                      </Header>
+                    </SemanticForm.Field>
+                  </SemanticForm.Group>
+                  {
+                    values.searches.map((search, index) => (
+                      <SemanticForm.Group>
+                        <>
+                          {
+                            index == 0 ? (
+                              <SemanticForm.Field width={2} />
+                            )
 
-                          {/* <Grid.Column width={1}>
-                            <Button
-                              onClick={() => arrayHelpers.insert(index, { type: 'all', field: 'all', operator: 'AND', value: '' })} 
-                              type="button"
-                            >
-                              +
-                            </Button>
-                          </Grid.Column> */}
-                        </Grid.Row>
-                      ))
-                    ) : (
-                      <Button type="submit" onClick={() => arrayHelpers.push('')} floated="right">
-                        Add Search
-                      </Button>
-                    )}
-                    
-                    <Grid.Row>
-                      <Grid.Column>
-                        <Button type="button" onClick={() => arrayHelpers.push('')} floated="right">
-                          Add
-                        </Button>
-                      </Grid.Column>
-                      <Grid.Column>
-                        <Button type="submit" floated="right">Submit</Button>
-                      </Grid.Column>
-                    </Grid.Row>
-                  </>
-                )}
-              />
-              </Grid>
-              </Form>
-          )}
-        />
-      
-     
+                              : (
+                                <Field name={`searches.${index}.operator`}>
+                                  {
+                                    ({ field: { value, onChange } }) => (
+                                      <SemanticForm.Select name={`searches.${index}.operator`} fluid options={searchOperators} onChange={(e, { name, value }) => {
+                                        setFieldValue(`searches.${index}.operator`, value)
+                                      }}
+                                        value={value}
+                                        width={2}
+                                      />
+                                    )
+                                  }
+                                </Field>
+                              )
+                          }
+                        </>
+
+                        <Field name={`searches.${index}.field`}>
+                          {
+                            ({ field: { value, onChange } }) => (
+                              <SemanticForm.Select name={`searches.${index}.field`} fluid options={searchFields} onChange={(e, { name, value }) => {
+                                setFieldValue(`searches.${index}.field`, value)
+                              }}
+                                value={value}
+                                width={2}
+                              />
+                            )
+                          }
+                        </Field>
+                        <Field name={`searches.${index}.type`}>
+                          {
+                            ({ field: { value, onChange } }) => (
+                              <SemanticForm.Select name={`searches.${index}.type`} fluid options={searchTypes} onChange={(e, { name, value }) => {
+                                setFieldValue(`searches.${index}.type`, value)
+                              }}
+                                value={value}
+                                width={2}
+                              />
+                            )
+                          }
+                        </Field>
+                        <Field name={`searches.${index}.value`} as={SemanticForm.Input} fluid placeholder="Search Text" width={8} />
+                        <SemanticForm.Field width={2}>
+                          <SemanticForm.Group width="equal" textAlign="center" centered>
+                            <Button type="button" fluid basic icon='add' onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              arrayHelpers.insert(index + 1, defaultSearchValue)
+                            }} />
+                            {
+                              values.searches.length > 1 && (
+                                <Button type="button" variant="primary" fluid basic icon='x' onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  arrayHelpers.remove(index)
+                                }} />
+                              )
+                            }
+                          </SemanticForm.Group>
+                        </SemanticForm.Field>
+
+                      </SemanticForm.Group>
+                    ))
+                  }
+                  <SemanticForm.Button floated='right' type="submit">Search</SemanticForm.Button>
+                </>
+              )}
+            />
+          </Form>
+        )
+      }}
+    />
   )
 }
 
