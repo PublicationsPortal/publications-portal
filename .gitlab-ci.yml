@@ -34,4 +34,6 @@ docker-build:
     - if: $CI_COMMIT_BRANCH
       exists:
         - Dockerfile
+  tags:
+    - docker
 
