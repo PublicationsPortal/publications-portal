@@ -72,7 +72,7 @@ const decodeSearchFromURL = (queryString) => {
     searchArray.push({ type, field, operator, value });
   })
 
-  return { searches: searchArray };
+  return searchArray
 };
 
 // Search encoding Helper function start
@@ -143,7 +143,9 @@ export default function Search(props) {
   React.useEffect(() => {
     if (props.queryString) {
       const decodedSearch = decodeSearchFromURL(props.queryString);
-      setInitialValues(decodedSearch);
+      setInitialValues({
+        searches: [...decodedSearch, defaultSearchValue]
+      });
     }
   }, [])
 
