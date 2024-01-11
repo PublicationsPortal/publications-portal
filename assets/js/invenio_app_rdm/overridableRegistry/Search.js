@@ -22,6 +22,7 @@ const searchFields = [
 const searchOperators = [
   { key: 'AND', text: 'And', value: 'AND' },
   { key: 'OR', text: 'Or', value: 'OR' },
+  { key: 'NOT', text: 'Not', value: 'NOT' },
 ]
 // Constant Variables end
 
@@ -39,6 +40,11 @@ const decodeSearchFromURL = (queryString) => {
       operator = "AND"
       // Remove the + from s
       s = s.replace("+", "")
+    }
+    else if (s.startsWith("-")) {
+      operator = "NOT"
+      // Remove the + from s
+      s = s.replace("-", "")
     }
 
     // Field Detection
@@ -96,6 +102,8 @@ const appendSearchOperator = (term1, term2, operator) => {
       return `${term1 ? `${term1} ` : ""}+${term2}`
     case "OR":
       return `${term1 ? `${term1} ` : ""}${term2}`
+    case "NOT":
+      return `${term1 ? `${term1} ` : ""}-${term2}`
     default:
       return `${term1 ? `${term1} ` : ""}${term2}`
   }
@@ -116,7 +124,10 @@ const generateSearchQuery = (searches) => {
     search = appendSearchOperator(
       search,
       seachAfterAppendingField,
-      index == 0 && searches[index + 1] ? searches[index + 1].operator : searchItem.operator
+      index == 0 && searches[index + 1]
+        ? (searches[index + 1].operator && searches[index + 1].operator == "AND" ? "AND" : "")
+        :
+        searchItem.operator
     )
   })
   return search
