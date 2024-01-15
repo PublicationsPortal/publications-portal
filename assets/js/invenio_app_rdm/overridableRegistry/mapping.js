@@ -10,11 +10,6 @@
 
 import Search from "./Search"
 
-import React from "react"
-function Desc() {
-  return <>Descripton------</>
-}
 export const overriddenComponents = {
-  "InvenioAppRdm.Search.SearchBar.element": Search,
-  "InvenioAppRdm.Deposit.DescriptionsField.container": Desc
+  "InvenioAppRdm.Search.SearchBar.element": Search
 }
