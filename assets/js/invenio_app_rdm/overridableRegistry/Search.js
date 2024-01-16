@@ -266,12 +266,14 @@ export default function Search(props) {
                   Time Period
                 </Header>
               </SemanticForm.Field>
-
-              <SemanticForm.Field width={6}>
-                <Header as='h4' dividing>
-                  Specific Period
-                </Header>
-              </SemanticForm.Field>
+              {
+                values.date.timePeriod == "specific" &&
+                <SemanticForm.Field width={6}>
+                  <Header as='h4' dividing>
+                    Specific Period
+                  </Header>
+                </SemanticForm.Field>
+              }
             </SemanticForm.Group>
             <SemanticForm.Group className="computer screen only">
               <SemanticForm.Field width={2} />
@@ -357,13 +359,13 @@ export default function Search(props) {
                       </Header>
                     </SemanticForm.Field>
 
-                    <SemanticForm.Field width={2}>
+                    <SemanticForm.Field width={3}>
                       <Header as='h4' dividing>
                         Contains
                       </Header>
                     </SemanticForm.Field>
 
-                    <SemanticForm.Field width={8}>
+                    <SemanticForm.Field width={7}>
                       <Header as='h4' dividing>
                         Search Text
                       </Header>
@@ -414,12 +416,12 @@ export default function Search(props) {
                                 setFieldValue(`searches.${index}.type`, value)
                               }}
                                 value={value}
-                                width={2}
+                                width={3}
                               />
                             )
                           }
                         </Field>
-                        <Field name={`searches.${index}.value`} as={SemanticForm.Input} fluid placeholder="Search Text" width={8} />
+                        <Field name={`searches.${index}.value`} as={SemanticForm.Input} fluid placeholder="Search Text" width={7} />
                         <SemanticForm.Field width={2}>
                           <SemanticForm.Group width="equal">
                             <Button type="button" fluid basic primary icon='add' onClick={(e) => {
