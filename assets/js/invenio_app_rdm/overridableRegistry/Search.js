@@ -210,7 +210,7 @@ const generateSearchQuery = (values) => {
         searchItem.operator
     )
   })
-  search = search + " " + generateSearchDateQuery(date)
+  search = `${search ? `${search} ` : ""}${generateSearchDateQuery(date)}`
   return search
 }
 
