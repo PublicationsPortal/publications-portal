@@ -211,6 +211,7 @@ const generateSearchQuery = (values) => {
     )
   })
   search = `${search ? `${search} ` : ""}${generateSearchDateQuery(date)}`
+  search = search.trim();
   return search
 }
 
