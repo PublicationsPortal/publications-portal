@@ -254,102 +254,17 @@ export default function Search(props) {
       render={({ setFieldValue, values, resetForm, onReset }) => {
         return (
           <Form className="ui form" action="#">
-            <SemanticForm.Group className="computer screen only">
-              <SemanticForm.Field width={2} />
-              <SemanticForm.Field width={4}>
-                <Header as='h4' dividing>
-                  Date Type
-                </Header>
-              </SemanticForm.Field>
-
-              {/* <SemanticForm.Field width={4}>
-                <Header as='h4' dividing>
-                  Time Period
-                </Header>
-              </SemanticForm.Field> */}
-              {
-                values.date.timePeriod == "specific" &&
-                <SemanticForm.Field width={10}>
-                  <Header as='h4' dividing>
-                    Specific Period
-                  </Header>
-                </SemanticForm.Field>
-              }
-            </SemanticForm.Group>
-            <SemanticForm.Group className="computer screen only">
-              <SemanticForm.Field width={2} />
-              <Field name={`date.type`}>
-                {
-                  ({ field: { value, onChange } }) => (
-                    <SemanticForm.Select name={`date.type`} fluid options={dateTypes} onChange={(e, { name, value }) => {
-                      setFieldValue(`date.type`, value)
-                    }}
-                      value={value}
-                      width={4}
-                    />
-                  )
-                }
-              </Field>
-
-              {/* <Field name={`date.timePeriod`}>
-                {
-                  ({ field: { value, onChange } }) => (
-                    <SemanticForm.Select name={`date.timePeriod`} fluid options={timePeriod} onChange={(e, { name, value }) => {
-                      setFieldValue(`date.timePeriod`, value)
-                    }}
-                      value={value}
-                      width={4}
-                    />
-                  )
-                }
-              </Field> */}
-
-              {
-                values.date.timePeriod == "specific" && <>
-                  <Field name={`date.specific_date_start_period`}>
-                    {
-                      ({ field: { value, onChange } }) => (
-                        <SemanticForm.Input name={`date.specific_date_start_period`} type="date" fluid onChange={(e, { name, value }) => {
-                          setFieldValue(`date.specific_date_start_period`, value)
-                        }}
-                          value={value}
-                          width={5}
-                        />
-                      )
-                    }
-                  </Field>
-                  <Field name={`date.specific_date_end_period`}>
-                    {
-                      ({ field: { value, onChange } }) => (
-                        <SemanticForm.Input name={`date.specific_date_end_period`} type="date" fluid onChange={(e, { name, value }) => {
-                          setFieldValue(`date.specific_date_end_period`, value)
-                        }}
-                          value={value}
-                          width={5}
-                        />
-                      )
-                    }
-                  </Field>
-                </>
-              }
-
-            </SemanticForm.Group>
-            <Divider />
             <FieldArray
               name="searches"
               render={arrayHelpers => (
                 <>
                   <SemanticForm.Group className="computer screen only">
                     {
-                      values.searches.length > 1 ? (
+                      values.searches.length > 1 && (
                         <SemanticForm.Field width={2}>
                           <Header as='h4' dividing>
                             Operator
                           </Header>
-                        </SemanticForm.Field>
-                      ) : (
-                        <SemanticForm.Field width={2}>
-                          <Header as='h4'></Header>
                         </SemanticForm.Field>
                       )
                     }
@@ -366,7 +281,7 @@ export default function Search(props) {
                       </Header>
                     </SemanticForm.Field>
 
-                    <SemanticForm.Field width={9}>
+                    <SemanticForm.Field width={values.searches.length > 1 ? 9 : 11}>
                       <Header as='h4' dividing>
                         Search Text
                       </Header>
@@ -377,24 +292,26 @@ export default function Search(props) {
                       <SemanticForm.Group>
                         <>
                           {
-                            index == 0 ? (
-                              <SemanticForm.Field width={2} />
+                            values.searches.length > 1 && (
+                              <>
+                                {
+                                  index > 0 ? (
+                                    <Field name={`searches.${index}.operator`}>
+                                      {
+                                        ({ field: { value, onChange } }) => (
+                                          <SemanticForm.Select name={`searches.${index}.operator`} fluid options={searchOperators} onChange={(e, { name, value }) => {
+                                            setFieldValue(`searches.${index}.operator`, value)
+                                          }}
+                                            value={value}
+                                            width={2}
+                                          />
+                                        )
+                                      }
+                                    </Field>
+                                  ) : <SemanticForm.Field width={2} />
+                                }
+                              </>
                             )
-
-                              : (
-                                <Field name={`searches.${index}.operator`}>
-                                  {
-                                    ({ field: { value, onChange } }) => (
-                                      <SemanticForm.Select name={`searches.${index}.operator`} fluid options={searchOperators} onChange={(e, { name, value }) => {
-                                        setFieldValue(`searches.${index}.operator`, value)
-                                      }}
-                                        value={value}
-                                        width={2}
-                                      />
-                                    )
-                                  }
-                                </Field>
-                              )
                           }
                         </>
 
@@ -422,7 +339,7 @@ export default function Search(props) {
                             )
                           }
                         </Field>
-                        <Field name={`searches.${index}.value`} as={SemanticForm.Input} fluid placeholder="Search Text" width={values.searches.length > 1 ? 8 : 9} />
+                        <Field name={`searches.${index}.value`} as={SemanticForm.Input} fluid placeholder="Search Text" width={values.searches.length > 1 ? 8 : 11} />
                         {
                           values.searches.length > 1 && (<SemanticForm.Field width={1}>
 
@@ -437,7 +354,7 @@ export default function Search(props) {
                       </SemanticForm.Group>
                     ))
                   }
-                  <SemanticForm.Group width="equal" style={{ justifyContent: "right" }}>
+                  <SemanticForm.Group style={{ justifyContent: "right" }}>
                     <Field name={`date.type`}>
                       {
                         ({ field: { value, onChange } }) => (
@@ -452,17 +369,17 @@ export default function Search(props) {
                     </Field>
 
                     {/* <Field name={`date.timePeriod`}>
-                {
-                  ({ field: { value, onChange } }) => (
-                    <SemanticForm.Select name={`date.timePeriod`} fluid options={timePeriod} onChange={(e, { name, value }) => {
-                      setFieldValue(`date.timePeriod`, value)
-                    }}
-                      value={value}
-                      width={4}
-                    />
-                  )
-                }
-              </Field> */}
+                    {
+                      ({ field: { value, onChange } }) => (
+                        <SemanticForm.Select name={`date.timePeriod`} fluid options={timePeriod} onChange={(e, { name, value }) => {
+                          setFieldValue(`date.timePeriod`, value)
+                        }}
+                          value={value}
+                          width={4}
+                        />
+                      )
+                    }
+                    </Field> */}
 
                     {
                       values.date.timePeriod == "specific" && <>
@@ -493,27 +410,57 @@ export default function Search(props) {
                       </>
                     }
 
-                    <SemanticForm.Button positive type="button"
-                      onClick={() => {
-                        arrayHelpers.push(defaultSearchValue)
-                      }}
-                    >
-                      Add New Row
-                    </SemanticForm.Button>
-                    <SemanticForm.Button color="orange" type="button" basic
-                      onClick={() => {
-                        setInitialValues(initialValueState)
-                        resetForm({ values: initialValueState })
-                      }}
-                    >
-                      Reset
-                    </SemanticForm.Button>
-                    <SemanticForm.Button primary type="submit">Search</SemanticForm.Button>
+                    <SemanticForm.Field width={2}>
+                      <SemanticForm.Button fluid positive type="button"
+                        onClick={() => {
+                          arrayHelpers.push(defaultSearchValue)
+                        }}
+                      >
+                        Add New Row
+                      </SemanticForm.Button>
+                    </SemanticForm.Field>
+
+                    <SemanticForm.Field width={2}>
+                      <SemanticForm.Button fluid color="orange" type="button" basic
+                        onClick={() => {
+                          setInitialValues(initialValueState)
+                          resetForm({ values: initialValueState })
+                        }}
+                      >
+                        Reset
+                      </SemanticForm.Button>
+                    </SemanticForm.Field>
+
+                    <SemanticForm.Field width={2}>
+                      <SemanticForm.Button fluid primary type="submit">Search</SemanticForm.Button>
+                    </SemanticForm.Field>
+
+                    {/* <SemanticForm.Field width={6}>
+                      <SemanticForm.Group width="equal">
+                        <SemanticForm.Button positive type="button"
+                          onClick={() => {
+                            arrayHelpers.push(defaultSearchValue)
+                          }}
+                        >
+                          Add New Row
+                        </SemanticForm.Button>
+                        <SemanticForm.Button color="orange" type="button" basic
+                          onClick={() => {
+                            setInitialValues(initialValueState)
+                            resetForm({ values: initialValueState })
+                          }}
+                        >
+                          Reset
+                        </SemanticForm.Button>
+                        <SemanticForm.Button primary type="submit">Search</SemanticForm.Button>
+                      </SemanticForm.Group>
+                    </SemanticForm.Field> */}
                   </SemanticForm.Group>
                 </>
-              )}
+              )
+              }
             />
-          </Form>
+          </Form >
         )
       }}
     />
