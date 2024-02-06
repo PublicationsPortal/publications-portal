@@ -216,7 +216,7 @@ const generateSearchQuery = (values) => {
 }
 
 const initialValueState = {
-  searches: [defaultSearchValue],
+  searches: [defaultSearchValue, defaultSearchValue],
   date: {
     type: dateTypes[0].value,
     timePeriod: timePeriod[0].value, // Specific
