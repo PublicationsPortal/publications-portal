@@ -85,7 +85,7 @@ export class Meeting extends Component {
               <label className="helptext mb-0">{url.description}</label>
             )}
           </Grid.Column>
-          <Grid.Column width="6">
+          {/* <Grid.Column width="6">
             <Input
               fieldPath={`${fieldPath}.session`}
               label={session.label}
@@ -94,8 +94,8 @@ export class Meeting extends Component {
             {session.description && (
               <label className="helptext mb-0">{session.description}</label>
             )}
-          </Grid.Column>
-          <Grid.Column width="6">
+          </Grid.Column> */}
+          {/* <Grid.Column width="6">
             <Input
               fieldPath={`${fieldPath}.session_part`}
               label={sessionPart.label}
@@ -104,7 +104,7 @@ export class Meeting extends Component {
             {sessionPart.description && (
               <label className="helptext mb-0">{sessionPart.description}</label>
             )}
-          </Grid.Column>
+          </Grid.Column> */}
         </Grid>
       </>
     );
@@ -115,8 +115,8 @@ Meeting.propTypes = {
   fieldPath: PropTypes.string.isRequired,
   title: PropTypes.object.isRequired,
   acronym: PropTypes.object.isRequired,
-  session_part: PropTypes.object.isRequired,
-  session: PropTypes.object.isRequired,
+  // session_part: PropTypes.object.isRequired,
+  // session: PropTypes.object.isRequired,
   url: PropTypes.object.isRequired,
   dates: PropTypes.object.isRequired,
   place: PropTypes.object.isRequired,

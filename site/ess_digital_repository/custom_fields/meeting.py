@@ -36,8 +36,8 @@ class MeetingCF(BaseCF):
                 "acronym": SanitizedUnicode(),
                 "dates": SanitizedUnicode(),
                 "place": SanitizedUnicode(),
-                "session_part": SanitizedUnicode(),
-                "session": SanitizedUnicode(),
+                # "session_part": SanitizedUnicode(),
+                # "session": SanitizedUnicode(),
                 "title": SanitizedUnicode(),
                 "url": SanitizedUnicode(
                     # validate=_valid_url(error_msg="You must provide a valid URL."),
@@ -54,8 +54,8 @@ class MeetingCF(BaseCF):
                 "acronym": {"type": "keyword"},
                 "dates": {"type": "keyword"},
                 "place": {"type": "text"},
-                "session_part": {"type": "keyword"},
-                "session": {"type": "keyword"},
+                # "session_part": {"type": "keyword"},
+                # "session": {"type": "keyword"},
                 "title": {
                     "type": "text",
                     "fields": {"keyword": {"type": "keyword"}},
@@ -108,16 +108,16 @@ MEETING_CUSTOM_FIELDS_UI = {
                     "placeholder": "",
                     "description": "",
                 },
-                "session": {
-                    "label": _("Session"),
-                    "placeholder": _("e.g. VI"),
-                    "description": _("Session within the conference."),
-                },
-                "session_part": {
-                    "label": _("Part"),
-                    "placeholder": _("e.g. 1"),
-                    "description": _("Part within the session."),
-                },
+                # "session": {
+                #     "label": _("Session"),
+                #     "placeholder": _("e.g. VI"),
+                #     "description": _("Session within the conference."),
+                # },
+                # "session_part": {
+                #     "label": _("Part"),
+                #     "placeholder": _("e.g. 1"),
+                #     "description": _("Part within the session."),
+                # },
             },
         }
     ],

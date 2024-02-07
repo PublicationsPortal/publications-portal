@@ -1,2 +1,5 @@
-@navbarBackgroundImage: #0099dc;
-@searchButtonColor: #Ff7d00;
+@navbarBackgroundImage: none;
+@navbarBackgroundColor: #0099dc;
+@primaryLabelColor: #821482;
+@primaryBorderLabelColor: #821482;
+@accessRightMetadataOnly: #0099dc;

@@ -1,11 +1,11 @@
-#records-list .labels-actions .primary{
-  background: #0099
+.footer-top{
+  background: #0099dc;
 }
 
-#records-list .labels-actions .neutral{
-  background: grey
+.footer-bottom{
+  background: #0099dc;
 }
 
-#records-list .labels-actions .metadata-only{
-  background: #099be0
+.ui.search.button{
+  background: #Ff7d00;
 }
