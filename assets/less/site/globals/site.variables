@@ -3,3 +3,16 @@
 @primaryLabelColor: #821482;
 @primaryBorderLabelColor: #821482;
 @accessRightMetadataOnly: #0099dc;
+@footerDarkColor: #0099dc;
+@footerLightColor: #0099dc;
+
+@orange: #ff7d00;
+@purple: #821482;
+@green: #006646;
+@lightGreen: #99be00;
+@blue: #003366;
+
+@primaryColor: #0099dc;
+@warningColor: @orange;
+
+@fontName: SegoeUI;

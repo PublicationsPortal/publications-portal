@@ -1,11 +1,45 @@
-.footer-top{
-  background: #0099dc;
-}
-
-.footer-bottom{
-  background: #0099dc;
-}
-
 .ui.search.button{
-  background: #Ff7d00;
+  background-color: #Ff7d00!important;
+}
+
+.ui.primary.label{
+  background-color: #821482!important;
+  border-color: #821482!important;
+}
+
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeui-light.ttf) format('truetype');
+  font-weight: 100;
+}
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeui-semi-light.ttf) format('truetype');
+  font-weight: 200;
+}
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeui-normal.ttf) format('truetype');
+  font-weight: 400;
+}
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeui-bold.ttf) format('truetype');
+  font-weight: 600;
+}
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeui-semi-bold.ttf) format('truetype');
+  font-weight: 700;
+}
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeuii.ttf) format('truetype');
+  font-style: italic;
+}
+@font-face {
+  font-family: SegoeUI;
+  src: url(../../../fonts/segoe-ui/segoeuiz.ttf) format('truetype');
+  font-weight: 600;
+  font-style: italic;
 }
