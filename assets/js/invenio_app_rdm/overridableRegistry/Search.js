@@ -157,6 +157,11 @@ const appendSearchOperator = (term1, term2, operator) => {
 
 const generateSearchDateQuery = (date) => {
   const { type, timePeriod, specific_date_start_period, specific_date_end_period } = date
+
+  if (!specific_date_start_period || !specific_date_end_period) {
+    return ''
+  }
+
   let startDate = ""
   let endDate = moment()
 
