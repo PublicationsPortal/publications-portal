@@ -38,7 +38,7 @@ docker-build:
     - docker
 
 release_job:
-  stage: release
+  stage: deploy
   image: docker:cli
   services:
     - docker:dind
