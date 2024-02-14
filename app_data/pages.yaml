@@ -1,0 +1,4 @@
+# list of pages:
+- url: /about
+  title: About ESS Research Portal
+  template: about.html
