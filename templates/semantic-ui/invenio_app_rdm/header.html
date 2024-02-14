@@ -70,7 +70,7 @@
 
 
           {%- block navbar_nav %}
-            {%- for item in current_menu.submenu('main').children|sort(attribute='order') if item.visible recursive %}
+            <!-- {%- for item in current_menu.submenu('main').children|sort(attribute='order') if item.visible recursive %}
               {%- if item.children %}
                 <div class="item">
                   <div class="dropdown {{ ' active' if item.active else '' }}">
@@ -94,7 +94,7 @@
                   <a href="{{ item.url }}">{{ item.text|safe }}</a>
                 </div>
               {%- endif %}
-            {%- endfor %}
+            {%- endfor %} -->
             
             {% if current_user.is_authenticated %}
               {% for item in current_menu.submenu('actions').children|sort(attribute='order') if item.visible recursive %}
