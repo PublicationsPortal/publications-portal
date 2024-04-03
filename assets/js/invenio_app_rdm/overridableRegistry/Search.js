@@ -33,6 +33,7 @@ const dateTypes = [
 ]
 
 const timePeriod = [
+  { key: 'specific_year', text: 'Specific Year', value: 'specific_year' },
   { key: 'specific', text: 'Specific', value: 'specific' },
   { key: 'all_year', text: 'All Year', value: 'all_year' },
   { key: 'last_year', text: 'Last Year', value: 'last_year' },
@@ -45,7 +46,7 @@ const timePeriod = [
 // Decoding the encoded search query from the URL and converting into the array of object to feed into the Formik
 const decodeSearchFromURL = (queryString) => {
   const searches = [];
-  const date = { type: dateTypes[0].value, timePeriod: timePeriod[0].value, specific_date_start_period: "", specific_date_end_period: "" }
+  const date = { type: dateTypes[0].value, timePeriod: timePeriod[0].value, specific_date_start_period: "", specific_date_end_period: "" };
   const splittedSearches = queryString.split(") ")
   splittedSearches.forEach(s => {
     let field = "all", value, operator = "OR", type = "any";
@@ -78,28 +79,36 @@ const decodeSearchFromURL = (queryString) => {
       value = value.replace("]", "")
 
       let [startDate, endDate] = value.split(" TO ")
-      startDate = moment(startDate)
-      endDate = moment(endDate)
 
-      const yearsDifference = endDate.diff(startDate, 'years')
-      const monthsDifference = endDate.diff(startDate, 'months')
-
-      if (yearsDifference == 2) {
-        date.timePeriod = "last_two_years"
-      }
-      else if (yearsDifference == 5) {
-        date.timePeriod = "last_five_years"
-      }
-      else if (yearsDifference == 1) {
-        date.timePeriod = "last_year"
-      }
-      else if (monthsDifference == 1) {
-        date.timePeriod = "last_month"
+      if (startDate.length == 4 && endDate.length == 4) { // Checking if the date is in YYYY format
+        date.timePeriod = "specific_year"
+        date.specific_date_start_period = startDate
+        date.specific_date_end_period = endDate
       }
       else {
-        date.timePeriod = "specific"
-        date.specific_date_start_period = startDate.format("YYYY-MM-DD")
-        date.specific_date_end_period = endDate.format("YYYY-MM-DD")
+        startDate = moment(startDate)
+        endDate = moment(endDate)
+
+        const yearsDifference = endDate.diff(startDate, 'years')
+        const monthsDifference = endDate.diff(startDate, 'months')
+
+        if (yearsDifference == 2) {
+          date.timePeriod = "last_two_years"
+        }
+        else if (yearsDifference == 5) {
+          date.timePeriod = "last_five_years"
+        }
+        else if (yearsDifference == 1) {
+          date.timePeriod = "last_year"
+        }
+        else if (monthsDifference == 1) {
+          date.timePeriod = "last_month"
+        }
+        else {
+          date.timePeriod = "specific"
+          date.specific_date_start_period = startDate.format("YYYY-MM-DD")
+          date.specific_date_end_period = endDate.format("YYYY-MM-DD")
+        }
       }
 
       date.type = field
@@ -169,26 +178,34 @@ const generateSearchDateQuery = (date) => {
     return ""
   }
 
-  if (timePeriod == "specific") {
-    startDate = moment(specific_date_start_period)
-    endDate = moment(specific_date_end_period)
+  if (timePeriod == "specific_year") {
+    startDate = specific_date_start_period
+    endDate = specific_date_end_period
   }
-  else if (timePeriod == "last_year") {
-    startDate = moment().subtract(1, 'years')
-  }
-  else if (timePeriod == "last_two_years") {
-    startDate = moment().subtract(2, 'years')
-  }
-  else if (timePeriod == "last_five_years") {
-    startDate = moment().subtract(5, 'years')
-  }
-  else if (timePeriod == "last_month") {
-    startDate = moment().subtract(1, 'months')
+  else {
+    if (timePeriod == "specific") {
+      startDate = moment(specific_date_start_period)
+      endDate = moment(specific_date_end_period)
+    }
+    else if (timePeriod == "last_year") {
+      startDate = moment().subtract(1, 'years')
+    }
+    else if (timePeriod == "last_two_years") {
+      startDate = moment().subtract(2, 'years')
+    }
+    else if (timePeriod == "last_five_years") {
+      startDate = moment().subtract(5, 'years')
+    }
+    else if (timePeriod == "last_month") {
+      startDate = moment().subtract(1, 'months')
+    }
+
+    // Formatting the date to YYYY-MM-DD
+    startDate = startDate.format("YYYY-MM-DD")
+    endDate = endDate.format("YYYY-MM-DD")
   }
 
-  // Formatting the date to YYYY-MM-DD
-  startDate = startDate.format("YYYY-MM-DD")
-  endDate = endDate.format("YYYY-MM-DD")
+
 
   return `+${appendSearchField(`[${startDate} TO ${endDate}]`, type)}`
 }
@@ -224,7 +241,7 @@ const initialValueState = {
   searches: [defaultSearchValue, defaultSearchValue],
   date: {
     type: dateTypes[0].value,
-    timePeriod: timePeriod[0].value, // Specific
+    timePeriod: timePeriod[0].value, // Specific Year
     specific_date_start_period: "",
     specific_date_end_period: "",
   }
@@ -251,6 +268,7 @@ export default function Search(props) {
   }
 
   if (!initialValues) return null
+
   return (
     <Formik
       initialValues={initialValues}
@@ -386,6 +404,34 @@ export default function Search(props) {
                     }
                     </Field> */}
 
+                    {
+                      values.date.timePeriod == "specific_year" && <>
+                        <Field name={`date.specific_date_start_period`}>
+                          {
+                            ({ field: { value, onChange } }) => (
+                              <SemanticForm.Input name={`date.specific_date_start_period`} type="number" min="1900" max="2099" step="1" fluid onChange={(e, { name, value }) => {
+                                setFieldValue(`date.specific_date_start_period`, value)
+                              }}
+                                value={value}
+                                width={3}
+                              />
+                            )
+                          }
+                        </Field>
+                        <Field name={`date.specific_date_end_period`}>
+                          {
+                            ({ field: { value, onChange } }) => (
+                              <SemanticForm.Input name={`date.specific_date_end_period`} type="number" min="1900" max="2099" step="1" fluid onChange={(e, { name, value }) => {
+                                setFieldValue(`date.specific_date_end_period`, value)
+                              }}
+                                value={value}
+                                width={3}
+                              />
+                            )
+                          }
+                        </Field>
+                      </>
+                    }
                     {
                       values.date.timePeriod == "specific" && <>
                         <Field name={`date.specific_date_start_period`}>
