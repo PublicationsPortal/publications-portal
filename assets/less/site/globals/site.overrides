@@ -43,3 +43,6 @@
   font-weight: 600;
   font-style: italic;
 }
+div.field:has(label[for="metadata.dates"]) {
+  display: none;
+}
