@@ -46,6 +46,3 @@
 div.field:has(label[for="metadata.dates"]) {
   display: none;
 }
-img.ui.image.rdm-logo{
-  margin-top: 60px!important;
-}
