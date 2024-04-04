@@ -46,7 +46,7 @@ const timePeriod = [
 // Decoding the encoded search query from the URL and converting into the array of object to feed into the Formik
 const decodeSearchFromURL = (queryString) => {
   const searches = [];
-  const date = { type: dateTypes[0].value, timePeriod: timePeriod[0].value, specific_date_start_period: "", specific_date_end_period: "" };
+  const date = { type: dateTypes[0].value, timePeriod: timePeriod[0].value, specific_date_start_period: "2003", specific_date_end_period: new Date().getFullYear() + 1 };
   const splittedSearches = queryString.split(") ")
   splittedSearches.forEach(s => {
     let field = "all", value, operator = "OR", type = "any";
@@ -242,8 +242,8 @@ const initialValueState = {
   date: {
     type: dateTypes[0].value,
     timePeriod: timePeriod[0].value, // Specific Year
-    specific_date_start_period: "",
-    specific_date_end_period: "",
+    specific_date_start_period: "2003",
+    specific_date_end_period: new Date().getFullYear() + 1,
   }
 }
 
