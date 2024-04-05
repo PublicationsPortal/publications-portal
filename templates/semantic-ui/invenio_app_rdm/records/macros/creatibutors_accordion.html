@@ -1,0 +1,37 @@
+{%- from "invenio_app_rdm/records/macros/creatibutors.html" import creatibutor_icon %}
+
+{% macro show_creatibutors(creatibutors, show_affiliations=False) %}
+  {% for creatibutor in creatibutors %}
+  <li class="creatibutor-wrap separated {{loop.index > 5 and 'creatibutors-hidden'}}">
+    <a class="ui creatibutor-link"
+      {% if show_affiliations and creatibutor.affiliations %}
+        data-tooltip="{{ creatibutor.affiliations|join('; ', attribute='1') }}"
+      {% endif %}
+      href="{{url_for('invenio_search_ui.search', q='metadata.creators.person_or_org.name:"' + creatibutor.person_or_org.name + '"')}}"
+    >
+      <span class="creatibutor-name">
+        {{- creatibutor.person_or_org.name -}}
+      </span>
+      {%- if creatibutor.affiliations -%}
+      <sup class="font-tiny">
+        {%- for affiliation in creatibutor.affiliations -%}
+          {{ affiliation[0] }}{{ ", " if not loop.last }}
+        {%- endfor -%}
+      </sup>
+      {%- endif -%}
+    </a>
+    {{- creatibutor_icon(creatibutor) -}}
+  </li>
+  {% endfor %}
+  {% if creatibutors|length > 5 %}
+    <button class="ui button mini primary basic" id="contributorsShowMoreButton" onclick="toggleCreatibutors()">Show More</button>
+  {% endif %}
+
+  <script>
+    function toggleCreatibutors() {
+      $('li.creatibutor-wrap').toggleClass('creatibutors-hidden');
+      // CHange the button text to "Show More" or "Show Less" based on the current state
+      $('#contributorsShowMoreButton').text($('#contributorsShowMoreButton').text() === 'Show More' ? 'Show Less' : 'Show More');
+    }
+  </script>
+{%- endmacro %}
