@@ -46,3 +46,6 @@
 div.field:has(label[for="metadata.dates"]) {
   display: none;
 }
+li.creatibutors-hidden{
+  display: none!important;
+}
