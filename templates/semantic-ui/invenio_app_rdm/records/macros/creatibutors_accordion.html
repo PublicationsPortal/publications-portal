@@ -2,7 +2,7 @@
 
 {% macro show_creatibutors(creatibutors, show_affiliations=False) %}
   {% for creatibutor in creatibutors %}
-  <li class="creatibutor-wrap separated {{loop.index > 5 and 'creatibutors-hidden'}}">
+  <li class="creatibutor-wrap separated {{loop.index > 5 and 'creatibutor-wrap-hidable creatibutors-hidden'}}">
     <a class="ui creatibutor-link"
       {% if show_affiliations and creatibutor.affiliations %}
         data-tooltip="{{ creatibutor.affiliations|join('; ', attribute='1') }}"
@@ -29,7 +29,7 @@
 
   <script>
     function toggleCreatibutors() {
-      $('li.creatibutor-wrap').toggleClass('creatibutors-hidden');
+      $('li.creatibutor-wrap-hidable').toggleClass('creatibutors-hidden');
       // CHange the button text to "Show More" or "Show Less" based on the current state
       $('#contributorsShowMoreButton').text($('#contributorsShowMoreButton').text() === 'Show More' ? 'Show Less' : 'Show More');
     }
