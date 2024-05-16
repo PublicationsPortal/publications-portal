@@ -10,7 +10,7 @@ Implements the following fields:
 
 - thesis.university
 """
-from flask_babelex import lazy_gettext as _
+from invenio_i18n import lazy_gettext as _
 from invenio_records_resources.services.custom_fields import TextCF
 
 THESIS_NAMESPACE = {
