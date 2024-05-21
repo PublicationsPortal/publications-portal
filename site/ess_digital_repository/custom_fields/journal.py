@@ -13,7 +13,7 @@ Implements the following fields:
 """
 
 from idutils import is_issn
-from flask_babelex import lazy_gettext as _
+from invenio_i18n import lazy_gettext as _
 from invenio_records_resources.services.custom_fields import BaseCF
 from marshmallow import fields
 from marshmallow_utils.fields import SanitizedUnicode
