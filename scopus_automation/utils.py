@@ -1,14 +1,31 @@
 import yaml
+from constants import DEFAULT_COPYRIGHTS, DEFAULT_LANGUAGE
+import datetime
+
+def ensure_array_of_dicts(input_data):
+    if isinstance(input_data, dict):
+        return [input_data]
+    elif isinstance(input_data, list) and all(isinstance(item, dict) for item in input_data):
+        return input_data
+    else:
+        raise ValueError("Input must be a dictionary or a list of dictionaries.")
 
 def get_creators(authors, affiliations):
+  authors = ensure_array_of_dicts(authors)
+  affiliations = ensure_array_of_dicts(affiliations)
+
   creators = []
   for author in authors:
-    affiliation = next((affiliation for affiliation in affiliations if affiliation["@id"] == author['affiliation']['@id']), {})
+    author_affiliations = ensure_array_of_dicts(author.get('affiliation', []))
+    
+    author_affiliations_info = []
+    for author_affiliation in author_affiliations:
+      matching_affiliation = next((affiliation for affiliation in affiliations if affiliation["@id"] == author_affiliation['@id']), {})
+      if matching_affiliation is not None:
+        author_affiliations_info.append({"name": matching_affiliation.get('affilname')})
+
     creator = {
-        "affiliations": [{
-            # "id": affiliation.get('@id', "Unknown"), 
-            "name": affiliation.get('affilname', 'Unknown'),
-        }],
+        "affiliations": author_affiliations_info,
         "person_or_org": {
             "family_name": author.get('ce:surname', "Unknown"),
             "given_name": author.get('ce:given-name', "Unknown"),
@@ -20,12 +37,14 @@ def get_creators(authors, affiliations):
             "type": "personal"
         }
     }
+    print(creator)
     creators.append(creator)
   return creators
 
 scopus_type_rdm_type_mapper = {
-  "Book": "Book",
-  "Journal": "publication-article"
+  "Book": "publication-book",
+  "Journal": "publication-article",
+  "Conference Proceeding": "publication-conferenceproceeding"
 } # todo: This needs to be updated.
 
 def get_doi(doi):
@@ -33,13 +52,43 @@ def get_doi(doi):
     "identifier": doi,
     "scheme": "doi"
   }
+  
+def get_doi(doi):
+  return {
+    "identifier": doi,
+    "scheme": "doi"
+  }
+  
+def get_doi(doi):
+  return {
+    "identifier": doi,
+    "scheme": "doi"
+  }
 
-def get_identifiers(doi=None):
-  #todo: As of now, only doi is attached. Check with Fredrik about the others. 
+def get_identifiers(scopus_data):
+  doi = scopus_data['coredata']['prism:doi'] if 'prism:doi' in scopus_data['coredata'] else None
+  isbn = scopus_data["coredata"]["prism:isbn"] if "prism:isbn" in scopus_data["coredata"] else None
+  issn = scopus_data["coredata"]["prism:issn"] if "prism:issn" in scopus_data["coredata"] else None
+  
   identifiers = []
   if doi is not None:
-    identifiers.append(get_doi(doi))
+    identifiers.append({
+      "identifier": doi,
+      "scheme": "doi"
+    })
   
+  if isbn is not None:
+    identifiers.append({
+      "identifier": isbn,
+      "scheme": "isbn"
+    })
+  
+  if issn is not None:
+    identifiers.append({
+      "identifier": issn,
+      "scheme": "issn"
+    })
+  print('evaluated identifiers', identifiers)
   return identifiers
 
 def get_languages(languages):
@@ -64,7 +113,116 @@ def get_languages(languages):
 
   return formatted_languages
 
-def get_draft_record_payload(resource_type, creators, title, description, publication_date, publisher, auth_keywords, languages, doi=None):
+def get_imprint(scopus_data):
+  title = scopus_data["coredata"]["prism:publicationName"] if "prism:publicationName" in scopus_data["coredata"] else ""
+  isbn = scopus_data["coredata"]["prism:isbn"] if "prism:isbn" in scopus_data["coredata"] else ""
+  return {
+    "title": title,
+    "isbn": isbn,
+    "pages": "-"
+  }
+  
+def get_journal(scopus_data):
+  title = scopus_data["coredata"]["prism:publicationName"] if "prism:publicationName" in scopus_data["coredata"] else ""
+  volume = scopus_data["coredata"]["prism:volume"] if "prism:volume" in scopus_data["coredata"] else ""
+  issn = scopus_data["coredata"]["prism:issn"] if "prism:issn" in scopus_data["coredata"] else ""
+  issue_identifier = scopus_data["coredata"]["prism:issueIdentifier"] if "prism:issueIdentifier" in scopus_data["coredata"] else "-"
+  pageRange = scopus_data["coredata"]["prism:pageRange"] if "prism:pageRange" in scopus_data["coredata"] else ""
+  
+  return {
+    "title": title,
+    "issue": issue_identifier,
+    "volume": volume,
+    "pages": pageRange,
+    "issn": issn
+  }
+
+def get_meeting(scopus_data):
+  title = ""
+  place = ""
+  dates = ""
+  website = ""
+  try:
+    title = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["confname"]
+  except:
+    pass
+  
+  try:
+    conflocation = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["conflocation"]
+    place = f"{conflocation['venue']}, {conflocation['city']}, {conflocation['@country']}"
+  except:
+    pass
+  
+  try:
+    confdate = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["confdate"]
+    startdate = datetime.datetime(confdate["startdate"]["@year"], confdate["startdate"]["@month"], confdate["startdate"]["@day"])
+    enddate = datetime.datetime(confdate["enddate"]["@year"], confdate["enddate"]["@month"], confdate["enddate"]["@day"])
+    
+    dates = f"{startdate.strftime('%d-%B-%Y')} through {enddate.strftime('%d-%B-%Y')}"
+  except:
+    pass
+  
+  try:
+    website = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["confURL"]
+  except:
+    pass
+  
+  return {
+    "dates": dates,
+    "place": place,
+    "title": title,
+    "website": website
+  }
+
+def get_custom_fields(scopus_data):
+  return {
+    "journal:journal": get_journal(scopus_data),
+    "meeting:meeting": get_meeting(scopus_data),
+    "imprint:imprint": get_imprint(scopus_data)
+  }
+
+def get_references(scopus_data):
+  try:
+    scopus_references = scopus_data["item"]["bibrecord"]["tail"]["bibliography"]["reference"]
+    return [ 
+            {
+              "identifier": "", 
+              "scheme": "", 
+              "reference": scopus_reference["ref-fulltext"] if "ref-fulltext" in scopus_reference else ""
+            } 
+            for scopus_reference in scopus_references
+          ]
+  except:
+    return []
+
+def get_keywords(scopus_data):
+  auth_keywords = []
+  auth_keywords_from_citation = []
+  try:
+    auth_keywords = [{"subject": auth_keyword['$']} for auth_keyword in scopus_data['authkeywords']['author-keyword']]
+  except:
+    pass
+  
+  try:
+    auth_keywords_from_citation = [{"subject": auth_keyword['$']} for auth_keyword in scopus_data['item']['bibrecord']['head']['citation-info']['author-keywords']['author-keyword']]
+  except:
+    pass
+
+  return auth_keywords + auth_keywords_from_citation
+
+def get_draft_record_payload(scopus_data):
+  authors = scopus_data['authors']['author'] if 'author' in scopus_data['authors'] else []
+  affiliations = scopus_data['affiliation']
+    
+  resource_type = scopus_data['coredata']["prism:aggregationType"]
+  creators = get_creators(authors, affiliations)
+  title = scopus_data['coredata']['dc:title'] if 'dc:title' in scopus_data['coredata'] else ""
+  description = scopus_data['coredata']['dc:description'] if 'dc:description' in scopus_data['coredata'] else ""
+  publication_date = scopus_data['coredata']['prism:coverDate'] if 'prism:coverDate' in scopus_data['coredata'] else ""
+  publisher = scopus_data['coredata']['dc:publisher'] if 'dc:publisher' in scopus_data['coredata'] else ""
+  languages = []
+  
+    
   new_draft_record_payload = {
     "access": {
       "files": "public",
@@ -76,33 +234,22 @@ def get_draft_record_payload(resource_type, creators, title, description, public
     "metadata": {
       "creators": creators,
       "description": description,
-      "identifiers": get_identifiers(doi),
+      "identifiers": get_identifiers(scopus_data),
       "publication_date": publication_date,
       "publisher": publisher,
       "resource_type": {
         "id": scopus_type_rdm_type_mapper[resource_type]
       },
-      "rights": [
-        {
-          "id": "cc-by-4.0",
-          "title": {
-            "en": "Creative Commons Attribution 4.0 International"
-          },
-          "description": {
-            "en": "The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited."
-          },
-          "icon": "cc-by-icon",
-          "props": {
-            "url": "https://creativecommons.org/licenses/by/4.0/legalcode",
-            "scheme": "spdx"
-          }
-        }
-      ], # This has been hardcoded, since most of the recent uploads follows this. Check with Fredrik, if this is fine. 
-      "subjects": [{"subjects": subject} for subject in auth_keywords],
+      "rights": [ DEFAULT_COPYRIGHTS ],
+      "subjects": get_keywords(scopus_data),
       "title": title,
       "version": "v1",
-      "languages": get_languages(languages),
+      "languages": [ DEFAULT_LANGUAGE ],
+      "references": get_references(scopus_data)
     },
+    "custom_fields": get_custom_fields(scopus_data),
     "pids": {}
   }
+  
   return new_draft_record_payload
+  
