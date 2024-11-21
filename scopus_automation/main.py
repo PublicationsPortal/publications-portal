@@ -30,7 +30,7 @@ for scopus_result in scopus_results:
     print("Record already exists in Invenio RDM.")
     continue
 
-  print("Record does not exist in Invenio RDM. Creating draft record.")
+  print(f"Record - ({title}) does not exist in Invenio RDM. Creating draft record.")
   
   scp_doc = AbsDoc(scp_id = scopus_id)
   if scp_doc.read(scopus_client):
@@ -41,17 +41,6 @@ for scopus_result in scopus_results:
     
     draft_record_payload = get_draft_record_payload(scp_doc.data)
     
-    # draft_record_payload = get_draft_record_payload(
-    #   scopus_result["prism:aggregationType"], 
-    #   creators,
-    #   scp_doc.title,
-    #   scp_doc.data['coredata']['dc:description'] if 'dc:description' in scp_doc.data['coredata'] else "",
-    #   scp_doc.data['coredata']['prism:coverDate'] if 'prism:coverDate' in scp_doc.data['coredata'] else "",
-    #   scp_doc.data['coredata']['dc:publisher'] if 'dc:publisher' in scp_doc.data['coredata'] else "",
-    #   [auth_keyword['$'] for auth_keyword in scp_doc.data['authkeywords']['author-keyword']] if ('authkeywords' in scp_doc.data and scp_doc.data['authkeywords'] is not None)  else [],
-    #   doi=scp_doc.data['coredata']['prism:doi'] if 'prism:doi' in scp_doc.data['coredata'] else "",
-    # )
-    print(draft_record_payload)
     create_draft_record_response = invenio_rdm.create_draft_record(draft_record_payload)
     total_records_created += 1
     print("Draft Record Created Successfully.")

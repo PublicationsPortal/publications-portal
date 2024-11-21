@@ -57,6 +57,7 @@ class InvenioRDM:
   
   def fetch_draft_records(self, query = "",  total_page_size = __search_size, per_page_size=__per_page_size, force_fetch=False):
     if not force_fetch:
+     
       try: 
         with open("draft_records.json", "r") as outfile:
           self.draft_records = json.load(outfile)
@@ -105,9 +106,9 @@ class InvenioRDM:
         # Compare DOI
         if "identifiers" in metadata and next((doi for identifier in metadata["identifiers"] if identifier["scheme"] == "doi" and identifier["identifier"] == doi), None) is not None:
           return True
-       
+        
         # Compare title
-        if metadata["title"] == title.replace("<inf>", "").replace("</inf>", ""):
+        if metadata["title"] == title.replace("<inf>", "").replace("</inf>", "").replace("<sup>", "").replace("</sup>", ""):
           return True
       except Exception as e:
         print(e)

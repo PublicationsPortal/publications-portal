@@ -3,7 +3,7 @@ IS_DEV = True
 
 
 ORGANIZATION_ID = "60159918"
-# SCOPUS_SEARCH = f"( AF-ID ( {ORGANIZATION_ID} ) ) AND ( Analyzing Complex Systems with Cascades Using Continuous-Time Bayesian Networks )"
+# SCOPUS_SEARCH = f"( AF-ID ( {ORGANIZATION_ID} ) ) AND ( H- and proton beam loss comparison at sns superconducting linac )"
 SCOPUS_SEARCH = f"( AF-ID ( {ORGANIZATION_ID} ) )"
 SCOPUS_API_KEY = "6858f028b3dea19f44e71ee38f8abeee"
 SCOPUS_SEARCH_GET_ALL = True
