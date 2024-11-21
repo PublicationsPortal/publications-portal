@@ -1,22 +1,15 @@
 import os
 
-IS_PROD = os.getenv("ENVIRONMENT", "development") == "production"
-
 ORGANIZATION_ID = "60159918"
 # SCOPUS_SEARCH = f"( AF-ID ( {ORGANIZATION_ID} ) ) AND ( H- and proton beam loss comparison at sns superconducting linac )"
 SCOPUS_SEARCH = f"( AF-ID ( {ORGANIZATION_ID} ) )"
-SCOPUS_API_KEY = "6858f028b3dea19f44e71ee38f8abeee"
+SCOPUS_API_KEY = os.getenv("SCOPUS_API_KEY", "7f59af901d2d86f78a1fd60c1bf9426a")
 SCOPUS_SEARCH_GET_ALL = True
 ENVIRONMENT = "development"
 
-INVENIO_DEV_BASE_URL = "https://publications-portal.dev-sims.ess.eu/api/"
-INVENIO_PROD_KEY = 'auxH0mudobN0wgr4Gefgtjpc9jRo0XPtaOu8LkZxLDiT3UGTt55mbRGtJSvD'
 
-INVENIO_DEV_KEY = '9sYFmscf0c2jlnaJFF2txClyRlHVwFkvYPzKFEUvr3vbLysoDRqQn8CX3r0n'
-INVENIO_PROD_BASE_URL = "https://publications.ess.eu/api/"
-
-INVENIO_BASE_URL = INVENIO_PROD_BASE_URL if IS_PROD else INVENIO_DEV_BASE_URL
-INVENIO_KEY = INVENIO_PROD_KEY if IS_PROD else INVENIO_DEV_KEY # TODO: The API key is not effective. API works without it. API Key should be enforced. 
+INVENIO_BASE_URL = os.getenv("INVENIO_BASE_URL", "https://publications-portal.dev-sims.ess.eu/api/")
+INVENIO_KEY = os.getenv("INVENIO_KEY", "9sYFmscf0c2jlnaJFF2txClyRlHVwFkvYPzKFEUvr3vbLysoDRqQn8CX3r0n") # TODO: The API key is not effective. API works without it. API Key should be enforced. 
 
 INVENIO_SEARCH_SIZE = 2000
 INVENIO_PER_PAGE_SIZE = 50
