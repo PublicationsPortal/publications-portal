@@ -37,7 +37,6 @@ def get_creators(authors, affiliations):
             "type": "personal"
         }
     }
-    print(creator)
     creators.append(creator)
   return creators
 
@@ -88,7 +87,6 @@ def get_identifiers(scopus_data):
       "identifier": issn,
       "scheme": "issn"
     })
-  print('evaluated identifiers', identifiers)
   return identifiers
 
 def get_languages(languages):
