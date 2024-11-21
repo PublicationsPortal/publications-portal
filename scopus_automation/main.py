@@ -3,7 +3,7 @@ from elsapy.elssearch import ElsSearch
 from elsapy.elsdoc import AbsDoc # TODO: Remove when not needed
 from utils import get_creators, get_draft_record_payload
 from invenio_rdm import InvenioRDM
-from constants import SCOPUS_API_KEY, IS_DEV, INVENIO_FORCE_RECORDS_FETCH, CHECK_DUPLICATES, SCOPUS_SEARCH_GET_ALL
+from constants import SCOPUS_API_KEY, INVENIO_FORCE_RECORDS_FETCH, CHECK_DUPLICATES, SCOPUS_SEARCH_GET_ALL
 print("Starting...")
 import sys
 import json

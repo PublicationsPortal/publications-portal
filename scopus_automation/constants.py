@@ -1,6 +1,6 @@
-IS_DEV = True
+import os
 
-
+IS_PROD = os.getenv("ENVIRONMENT", "development") == "production"
 
 ORGANIZATION_ID = "60159918"
 # SCOPUS_SEARCH = f"( AF-ID ( {ORGANIZATION_ID} ) ) AND ( H- and proton beam loss comparison at sns superconducting linac )"
@@ -15,8 +15,8 @@ INVENIO_PROD_KEY = 'auxH0mudobN0wgr4Gefgtjpc9jRo0XPtaOu8LkZxLDiT3UGTt55mbRGtJSvD
 INVENIO_DEV_KEY = '9sYFmscf0c2jlnaJFF2txClyRlHVwFkvYPzKFEUvr3vbLysoDRqQn8CX3r0n'
 INVENIO_PROD_BASE_URL = "https://publications.ess.eu/api/"
 
-INVENIO_BASE_URL = INVENIO_DEV_BASE_URL if IS_DEV else INVENIO_PROD_BASE_URL
-INVENIO_KEY = INVENIO_DEV_KEY if IS_DEV else INVENIO_PROD_KEY # TODO: The API key is not effective. API works without it. API Key should be enforced. 
+INVENIO_BASE_URL = INVENIO_PROD_BASE_URL if IS_PROD else INVENIO_DEV_BASE_URL
+INVENIO_KEY = INVENIO_PROD_KEY if IS_PROD else INVENIO_DEV_KEY # TODO: The API key is not effective. API works without it. API Key should be enforced. 
 
 INVENIO_SEARCH_SIZE = 2000
 INVENIO_PER_PAGE_SIZE = 50
