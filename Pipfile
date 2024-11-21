@@ -13,6 +13,8 @@ uwsgitop = ">=0.11"
 uwsgi-tools = ">=1.1.1"
 sqlalchemy = {version = "*", extras = ["asyncio"]}
 invenio-app-rdm = {extras = ["postgresql", "opensearch2"], version = "~=12.0.0"}
+elsapy = "*"
+pandas = "2.2.3"
 
 [requires]
 python_version = "3.9"
