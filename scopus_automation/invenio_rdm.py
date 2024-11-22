@@ -1,6 +1,7 @@
 import requests
 import json
 import math
+import html
 
 from constants import INVENIO_SEARCH_SIZE, INVENIO_PER_PAGE_SIZE
 
@@ -108,7 +109,7 @@ class InvenioRDM:
           return True
         
         # Compare title
-        if metadata["title"] == title.replace("<inf>", "").replace("</inf>", "").replace("<sup>", "").replace("</sup>", ""):
+        if metadata["title"] == html.unescape(title.replace("<inf>", "").replace("</inf>", "").replace("<sup>", "").replace("</sup>", "")):
           return True
       except Exception as e:
         print(e)
