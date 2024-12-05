@@ -24,12 +24,14 @@ def get_creators(authors, affiliations):
       if matching_affiliation is not None:
         author_affiliations_info.append({"name": matching_affiliation.get('affilname')})
 
+    author_preferred_name = author.get('preferred-name', {})
+  
     creator = {
         "affiliations": author_affiliations_info,
         "person_or_org": {
-            "family_name": author.get('ce:surname', "Unknown"),
-            "given_name": author.get('ce:given-name', "Unknown"),
-            "name": author.get('ce:indexed-name', "Unknown"),
+            "family_name": author_preferred_name.get('ce:surname', "Unknown"),
+            "given_name": author_preferred_name.get('ce:given-name', "Unknown"),
+            "name": author_preferred_name.get('ce:indexed-name', "Unknown"),
             # "identifiers": [{
             #     "identifier": author.get('@auid', "Unknown"),
             #     "scheme": "orcid"
@@ -67,7 +69,7 @@ def get_doi(doi):
 def get_identifiers(scopus_data):
   doi = scopus_data['coredata']['prism:doi'] if 'prism:doi' in scopus_data['coredata'] else None
   isbn = scopus_data["coredata"]["prism:isbn"] if "prism:isbn" in scopus_data["coredata"] else None
-  issn = scopus_data["coredata"]["prism:issn"] if "prism:issn" in scopus_data["coredata"] else None
+  issn = scopus_data["coredata"]["prism:issn"][:8] if "prism:issn" in scopus_data["coredata"] else None
   
   identifiers = []
   if doi is not None:
@@ -123,7 +125,7 @@ def get_imprint(scopus_data):
 def get_journal(scopus_data):
   title = scopus_data["coredata"]["prism:publicationName"] if "prism:publicationName" in scopus_data["coredata"] else ""
   volume = scopus_data["coredata"]["prism:volume"] if "prism:volume" in scopus_data["coredata"] else ""
-  issn = scopus_data["coredata"]["prism:issn"] if "prism:issn" in scopus_data["coredata"] else ""
+  issn = scopus_data["coredata"]["prism:issn"][:8] if "prism:issn" in scopus_data["coredata"] else ""
   issue_identifier = scopus_data["coredata"]["prism:issueIdentifier"] if "prism:issueIdentifier" in scopus_data["coredata"] else "-"
   pageRange = scopus_data["coredata"]["prism:pageRange"] if "prism:pageRange" in scopus_data["coredata"] else ""
   
@@ -140,28 +142,42 @@ def get_meeting(scopus_data):
   place = ""
   dates = ""
   website = ""
+  
   try:
-    title = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["confname"]
+    confevent = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]
   except:
     pass
   
   try:
-    conflocation = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["conflocation"]
-    place = f"{conflocation['venue']}, {conflocation['city']}, {conflocation['@country']}"
+    title = confevent["confname"]
   except:
     pass
   
   try:
-    confdate = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["confdate"]
-    startdate = datetime.datetime(confdate["startdate"]["@year"], confdate["startdate"]["@month"], confdate["startdate"]["@day"])
-    enddate = datetime.datetime(confdate["enddate"]["@year"], confdate["enddate"]["@month"], confdate["enddate"]["@day"])
+    conflocation = confevent["conflocation"]
+    venue = conflocation.get("venue", "")
+    city = conflocation.get("city", "")
+    country = conflocation.get("@country", "")
+    
+    venue = f"{venue}, " if venue is not "" else ""
+    city = f"{city}, " if city is not "" else ""
+    country = f"{country}" if country is not "" else ""
+    
+    place = f"{venue}{city}{country}"
+  except:
+    pass
+  
+  try:
+    confdate = confevent["confdate"]
+    startdate = datetime.datetime(int(confdate["startdate"]["@year"]), int(confdate["startdate"]["@month"]), int(confdate["startdate"]["@day"]))
+    enddate = datetime.datetime(int(confdate["enddate"]["@year"]), int(confdate["enddate"]["@month"]), int(confdate["enddate"]["@day"]))
     
     dates = f"{startdate.strftime('%d-%B-%Y')} through {enddate.strftime('%d-%B-%Y')}"
   except:
     pass
   
   try:
-    website = scopus_data["item"]["bibrecord"]["head"]["source"]["additional-srcinfo"]["conferenceinfo"]["confevent"]["confURL"]
+    website = confevent["confURL"]
   except:
     pass
   
@@ -172,12 +188,20 @@ def get_meeting(scopus_data):
     "website": website
   }
 
-def get_custom_fields(scopus_data):
-  return {
-    "journal:journal": get_journal(scopus_data),
-    "meeting:meeting": get_meeting(scopus_data),
-    "imprint:imprint": get_imprint(scopus_data)
-  }
+def get_custom_fields(scopus_data, rdm_resource_type):
+  custom_fields = {}
+  
+  if rdm_resource_type == "publication-article":
+    custom_fields["journal:journal"] = get_journal(scopus_data)
+  
+  elif rdm_resource_type == "publication-conferenceproceeding":
+    custom_fields["meeting:meeting"] = get_meeting(scopus_data)
+    custom_fields["journal:journal"] = get_journal(scopus_data)
+  
+  elif rdm_resource_type == "publication-book":
+    custom_fields["imprint:imprint"] = get_imprint(scopus_data)
+  
+  return custom_fields
 
 def get_references(scopus_data):
   try:
@@ -197,16 +221,16 @@ def get_keywords(scopus_data):
   auth_keywords = []
   auth_keywords_from_citation = []
   try:
-    auth_keywords = [{"subject": auth_keyword['$']} for auth_keyword in scopus_data['authkeywords']['author-keyword']]
+    auth_keywords = [auth_keyword['$'] for auth_keyword in scopus_data['authkeywords']['author-keyword']]
   except:
     pass
   
   try:
-    auth_keywords_from_citation = [{"subject": auth_keyword['$']} for auth_keyword in scopus_data['item']['bibrecord']['head']['citation-info']['author-keywords']['author-keyword']]
+    auth_keywords_from_citation = [auth_keyword['$'] for auth_keyword in scopus_data['item']['bibrecord']['head']['citation-info']['author-keywords']['author-keyword']]
   except:
     pass
 
-  return auth_keywords + auth_keywords_from_citation
+  return [{'subject': keyword} for keyword in list(set(auth_keywords + auth_keywords_from_citation))]
 
 def get_draft_record_payload(scopus_data):
   authors = scopus_data['authors']['author'] if 'author' in scopus_data['authors'] else []
@@ -220,7 +244,7 @@ def get_draft_record_payload(scopus_data):
   publisher = scopus_data['coredata']['dc:publisher'] if 'dc:publisher' in scopus_data['coredata'] else ""
   languages = []
   
-    
+  rdm_resource_type = scopus_type_rdm_type_mapper[resource_type]
   new_draft_record_payload = {
     "access": {
       "files": "public",
@@ -236,7 +260,7 @@ def get_draft_record_payload(scopus_data):
       "publication_date": publication_date,
       "publisher": publisher,
       "resource_type": {
-        "id": scopus_type_rdm_type_mapper[resource_type]
+        "id": rdm_resource_type
       },
       "rights": [ DEFAULT_COPYRIGHTS ],
       "subjects": get_keywords(scopus_data),
@@ -245,7 +269,7 @@ def get_draft_record_payload(scopus_data):
       "languages": [ DEFAULT_LANGUAGE ],
       "references": get_references(scopus_data)
     },
-    "custom_fields": get_custom_fields(scopus_data),
+    "custom_fields": get_custom_fields(scopus_data, rdm_resource_type),
     "pids": {}
   }
   
