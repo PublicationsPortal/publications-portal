@@ -15,7 +15,8 @@ class InvenioRDM:
     self.headers = {
       "Accept": "application/json",
       "Content-Type": "application/json",
-      "Authorization": f"Bearer {token}"
+      "Authorization": f"Bearer {token}",
+      "User-Agent": "Python"
     }
     self.published_records = []
     self.draft_records = []
