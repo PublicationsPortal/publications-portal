@@ -159,9 +159,9 @@ def get_meeting(scopus_data):
     city = conflocation.get("city", "")
     country = conflocation.get("@country", "")
     
-    venue = f"{venue}, " if venue is not "" else ""
-    city = f"{city}, " if city is not "" else ""
-    country = f"{country}" if country is not "" else ""
+    venue = f"{venue}, " if venue else ""
+    city = f"{city}, " if city else ""
+    country = f"{country}" if country else ""
     
     place = f"{venue}{city}{country}"
   except:
