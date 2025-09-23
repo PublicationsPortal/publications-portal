@@ -9,7 +9,9 @@
  */
 
 import Search from "./Search"
+import RecordsResultsListItem from "./RecordsResultsListItem"
 
 export const overriddenComponents = {
-  "InvenioAppRdm.Search.SearchBar.element": Search
+  "InvenioAppRdm.Search.SearchBar.element": Search,
+  "InvenioAppRdm.Search.RecordsResultsListItem.layout": RecordsResultsListItem
 }

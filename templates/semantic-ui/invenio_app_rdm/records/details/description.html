@@ -1,0 +1,195 @@
+{#
+Copyright (C) 2020-2025 CERN.
+Copyright (C) 2020 Northwestern University.
+Copyright (C) 2021 New York University.
+
+Invenio RDM Records is free software; you can redistribute it and/or modify
+it under the terms of the MIT License; see LICENSE file for more details.
+#}
+
+{%- from "invenio_app_rdm/records/macros/detail.html" import show_add_descriptions %}
+
+{% set description = metadata.get('description') %}
+
+{% set simple_summary_abstract = record.get('custom_fields', {}).get('summarization:summarization',
+{}).get('simple', "")
+%}
+{% set advanced_summary_abstract = record.get('custom_fields',
+{}).get("summarization:summarization", {}).get("advanced", "") %}
+
+{% if description %}
+<section id="description" class="rel-mt-2 rich-input-content"
+  aria-label="{{ _('Record description') }}">
+  <h2 id="description-heading" class="sr-only">{{ _('Description') }}</h2>
+  {% set has_simple_summary = simple_summary_abstract and simple_summary_abstract.strip() %}
+  {% set has_advanced_summary = advanced_summary_abstract and advanced_summary_abstract.strip() %}
+
+  {% if has_simple_summary or has_advanced_summary %}
+  <div id="button-container"
+    style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+    <button id="show-original-btn" class="ui button blue basic"
+      style="display: none; transition: background 0.3s;">
+      <i class="file alternate outline icon"></i>
+      <span>Show Original Abstract</span>
+    </button>
+    {% if has_simple_summary %}
+    <button id="show-simple-btn" class="ui button blue basic" style="transition: background 0.3s;">
+      <i class="lightbulb outline icon"></i>
+      <span>Show Simple Abstract Summary</span>
+    </button>
+    {% endif %}
+    {% if has_advanced_summary %}
+    <button id="show-advanced-btn" class="ui button blue basic"
+      style="transition: background 0.3s;">
+      <i class="graduation cap icon"></i>
+      <span>Show Advanced Abstract Summary</span>
+    </button>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Dynamic content type heading -->
+  <div id="content-type-heading"
+    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+    <h3 style="margin: 0; font-size: 1.2em; color: #333; font-weight: 600;">
+      <i id="content-type-icon" class="file alternate outline icon"
+        style="margin-right: 0.3rem;"></i>
+      <span id="content-type-title">Abstract</span>
+    </h3>
+    <span id="ai-badge"
+      style="display: none; background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%); color: white; border-radius: 12px; padding: 0.2em 0.8em; font-size: 0.8em; font-weight: 500; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(106,130,251,0.15);">AI
+      Generated</span>
+  </div>
+  <div id="description-content"
+    style="word-wrap: break-word; transition: opacity 0.5s, transform 0.5s;">
+    {{ description | safe }}
+  </div>
+  <div id="simple-summary-content"
+    style="display: none; opacity: 0; transform: translateY(20px); word-wrap: break-word; background: #f4f8fb; border-radius: 10px; padding: 1.2em 1em; margin-top: 0.5em; box-shadow: 0 2px 12px rgba(106,130,251,0.07); border-left: 4px solid #6a82fb; font-style: italic; transition: opacity 0.5s, transform 0.5s;">
+    <i class="magic icon" style="color: #6a82fb;"></i>
+    {{ simple_summary_abstract | safe }}
+  </div>
+  <div id="advanced-summary-content"
+    style="display: none; opacity: 0; transform: translateY(20px); word-wrap: break-word; background: #f4f8fb; border-radius: 10px; padding: 1.2em 1em; margin-top: 0.5em; box-shadow: 0 2px 12px rgba(106,130,251,0.07); border-left: 4px solid #6a82fb; font-style: italic; transition: opacity 0.5s, transform 0.5s;">
+    <i class="magic icon" style="color: #6a82fb;"></i>
+    {{ advanced_summary_abstract | safe }}
+  </div>
+</section>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+
+  // Get button elements (may be null if not rendered)
+  const showOriginalBtn = document.getElementById('show-original-btn');
+  const showSimpleBtn = document.getElementById('show-simple-btn');
+  const showAdvancedBtn = document.getElementById('show-advanced-btn');
+  const buttonContainer = document.getElementById('button-container');
+
+  // Get content elements
+  const descContent = document.getElementById('description-content');
+  const simpleSummaryContent = document.getElementById('simple-summary-content');
+  const advancedSummaryContent = document.getElementById('advanced-summary-content');
+  const badge = document.getElementById('ai-badge');
+
+  // Get heading elements
+  const contentTypeIcon = document.getElementById('content-type-icon');
+  const contentTypeTitle = document.getElementById('content-type-title');
+
+  // Check if summaries exist (from server-side)
+  const hasSimpleSummary = {{ 'true' if has_simple_summary else 'false' }};
+  const hasAdvancedSummary = {{ 'true' if has_advanced_summary else 'false' }};
+
+  // Current state tracking
+  let currentContent = 'original'; // 'original', 'simple', 'advanced'
+
+  // Function to update button visibility based on current content
+  function updateButtonVisibility() {
+    if (!buttonContainer) return; // No buttons if no summaries exist
+
+    // Hide all buttons first
+    if (showOriginalBtn) showOriginalBtn.style.display = 'none';
+    if (showSimpleBtn) showSimpleBtn.style.display = 'none';
+    if (showAdvancedBtn) showAdvancedBtn.style.display = 'none';
+
+    // Show appropriate buttons based on current content and what's available
+    if (currentContent === 'original') {
+      if (showSimpleBtn && hasSimpleSummary) showSimpleBtn.style.display = 'inline-block';
+      if (showAdvancedBtn && hasAdvancedSummary) showAdvancedBtn.style.display = 'inline-block';
+    } else if (currentContent === 'simple') {
+      if (showOriginalBtn) showOriginalBtn.style.display = 'inline-block';
+      if (showAdvancedBtn && hasAdvancedSummary) showAdvancedBtn.style.display = 'inline-block';
+    } else if (currentContent === 'advanced') {
+      if (showOriginalBtn) showOriginalBtn.style.display = 'inline-block';
+      if (showSimpleBtn && hasSimpleSummary) showSimpleBtn.style.display = 'inline-block';
+    }
+  }
+
+  // Function to show content with smooth transition
+  function showContent(contentType) {
+    const allContents = [descContent, simpleSummaryContent, advancedSummaryContent];
+
+    // Hide all content first
+    allContents.forEach(content => {
+      content.style.opacity = 0;
+      content.style.transform = 'translateY(-20px)';
+    });
+
+    setTimeout(() => {
+      // Hide all content
+      allContents.forEach(content => {
+        content.style.display = 'none';
+      });
+
+      // Show selected content
+      let targetContent;
+      if (contentType === 'original') {
+        targetContent = descContent;
+        badge.style.display = 'none';
+        contentTypeIcon.className = 'file alternate outline icon';
+        contentTypeTitle.textContent = 'Original Abstract';
+      } else if (contentType === 'simple') {
+        targetContent = simpleSummaryContent;
+        badge.style.display = 'inline-block';
+        contentTypeIcon.className = 'lightbulb outline icon';
+        contentTypeTitle.textContent = 'Simple Abstract Summary';
+      } else if (contentType === 'advanced') {
+        targetContent = advancedSummaryContent;
+        badge.style.display = 'inline-block';
+        contentTypeIcon.className = 'graduation cap icon';
+        contentTypeTitle.textContent = 'Advanced Abstract Summary';
+      }
+
+      targetContent.style.display = 'block';
+      setTimeout(() => {
+        targetContent.style.opacity = 1;
+        targetContent.style.transform = 'translateY(0)';
+      }, 10);
+    }, 400);
+
+    currentContent = contentType;
+    updateButtonVisibility();
+  }
+
+  // Event listeners for buttons (only if they exist)
+  if (showOriginalBtn) {
+    showOriginalBtn.addEventListener('click', () => showContent('original'));
+  }
+  if (showSimpleBtn) {
+    showSimpleBtn.addEventListener('click', () => showContent('simple'));
+  }
+  if (showAdvancedBtn) {
+    showAdvancedBtn.addEventListener('click', () => showContent('advanced'));
+  }
+
+  // Handle beginner mode
+  if (mode === 'beginner' && hasSimpleSummary) {
+    // In beginner mode, show simple summary by default
+    currentContent = 'simple';
+    showContent('simple');
+  } else {
+    // Default: show original abstract with appropriate buttons
+    currentContent = 'original';
+    updateButtonVisibility();
+  }
+</script>
+{% endif %}

@@ -1,0 +1,81 @@
+<!-- Buttons to trigger modals using inline handlers -->
+<div style="display: flex; gap: 15px;">
+  <button class="ui small blue button" onclick="showModal('simple-modal')">
+    {{ _("Simple Abstract Summarization") }}
+  </button>
+  <button class="ui small green button" onclick="showModal('advanced-modal')">
+    {{ _("Advanced Abstract Summarization") }}
+  </button>
+</div>
+
+<!-- Simple Modal -->
+<div class="ui modal" id="simple-modal">
+  <i class="close icon"></i>
+  <div class="header">
+    {{ _("Simple Abstract Summarization") }}
+  </div>
+  <div class="content">
+    <div class="description">
+      {% if field_value.get('simple') %}
+      {{ field_value.get('simple')|safe }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">
+      {{ _("Close") }}
+    </div>
+  </div>
+</div>
+
+<!-- Advanced Modal -->
+<div class="ui modal" id="advanced-modal">
+  <i class="close icon"></i>
+  <div class="header">
+    {{ _("Advanced Abstract Summarization") }}
+  </div>
+  <div class="content">
+    <div class="description">
+      {% if field_value.get('advanced') %}
+      {{ field_value.get('advanced')|safe }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">
+      {{ _("Close") }}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Simple function that can be called directly
+  function showModal(modalId) {
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+      $('#' + modalId).modal('show');
+    } else {
+      // Fallback - try again after a short delay
+      setTimeout(function () {
+        showModal(modalId);
+      }, 100);
+    }
+  }
+
+  // Initialize modals when available
+  function initializeModals() {
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+      $('#simple-modal').modal();
+      $('#advanced-modal').modal();
+    } else {
+      setTimeout(initializeModals, 100);
+    }
+  }
+
+  // Try to initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeModals);
+  } else {
+    initializeModals();
+  }
+  window.addEventListener('load', initializeModals);
+</script>
