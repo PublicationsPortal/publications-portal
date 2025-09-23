@@ -26,170 +26,205 @@ it under the terms of the MIT License; see LICENSE file for more details.
 
   {% if has_simple_summary or has_advanced_summary %}
   <div id="button-container"
-    style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-    <button id="show-original-btn" class="ui button blue basic"
-      style="display: none; transition: background 0.3s;">
-      <i class="file alternate outline icon"></i>
-      <span>Show Original Abstract</span>
+    style="display: flex; align-items: center; gap: 0.3rem; margin-bottom: 1rem; flex-wrap: wrap;">
+    <button id="summary-toggle-btn" class="ui button blue basic"
+      style="font-size: 0.9rem; padding: 0.8em 1.2em; transition: background 0.3s;">
+      <i id="summary-btn-icon" class="graduation cap icon" style="font-size: 1rem;"></i>
+      <span id="summary-btn-text">AI Summary</span>
     </button>
-    {% if has_simple_summary %}
-    <button id="show-simple-btn" class="ui button blue basic" style="transition: background 0.3s;">
-      <i class="lightbulb outline icon"></i>
-      <span>Show Simple Abstract Summary</span>
-    </button>
-    {% endif %}
-    {% if has_advanced_summary %}
-    <button id="show-advanced-btn" class="ui button blue basic"
-      style="transition: background 0.3s;">
-      <i class="graduation cap icon"></i>
-      <span>Show Advanced Abstract Summary</span>
-    </button>
-    {% endif %}
   </div>
   {% endif %}
 
   <!-- Dynamic content type heading -->
   <div id="content-type-heading"
     style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-    <h3 style="margin: 0; font-size: 1.2em; color: #333; font-weight: 600;">
+    <h3
+      style="margin: 0; font-size: 1.2em; color: #333; font-weight: 600; display: flex; align-items: center; line-height: 1.2;">
       <i id="content-type-icon" class="file alternate outline icon"
-        style="margin-right: 0.3rem;"></i>
-      <span id="content-type-title">Abstract</span>
+        style="margin-right: 0.5rem; font-size: 1em; vertical-align: middle;"></i>
+      <span id="content-type-title"
+        style="display: inline-flex; align-items: center;">Abstract</span>
+      <div id="disclaimer-popup" style="display: none; margin-left: 0.5rem;">
+        <i class="help circle icon"
+          style="color: #6a82fb; cursor: pointer; font-size: 1.1rem; vertical-align: middle; align-items: center; justify-content: center; min-width: 1.1rem; min-height: 1.1rem;"
+          title="Disclaimer: The AI Summary is not a scientific research tool but a communication aid powered by a Large Language Model (LLM). It provides simplified summaries of scientific abstracts to enhance accessibility for non-specialists. While efforts are made to ensure accuracy, the outputs should not replace professional scientific interpretation or advice."
+          onclick="showDisclaimer()"></i>
+      </div>
     </h3>
-    <span id="ai-badge"
-      style="display: none; background: linear-gradient(90deg, #6a82fb 0%, #fc5c7d 100%); color: white; border-radius: 12px; padding: 0.2em 0.8em; font-size: 0.8em; font-weight: 500; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(106,130,251,0.15);">AI
-      Generated</span>
   </div>
   <div id="description-content"
     style="word-wrap: break-word; transition: opacity 0.5s, transform 0.5s;">
     {{ description | safe }}
   </div>
-  <div id="simple-summary-content"
-    style="display: none; opacity: 0; transform: translateY(20px); word-wrap: break-word; background: #f4f8fb; border-radius: 10px; padding: 1.2em 1em; margin-top: 0.5em; box-shadow: 0 2px 12px rgba(106,130,251,0.07); border-left: 4px solid #6a82fb; font-style: italic; transition: opacity 0.5s, transform 0.5s;">
-    <i class="magic icon" style="color: #6a82fb;"></i>
-    {{ simple_summary_abstract | safe }}
-  </div>
-  <div id="advanced-summary-content"
-    style="display: none; opacity: 0; transform: translateY(20px); word-wrap: break-word; background: #f4f8fb; border-radius: 10px; padding: 1.2em 1em; margin-top: 0.5em; box-shadow: 0 2px 12px rgba(106,130,251,0.07); border-left: 4px solid #6a82fb; font-style: italic; transition: opacity 0.5s, transform 0.5s;">
-    <i class="magic icon" style="color: #6a82fb;"></i>
-    {{ advanced_summary_abstract | safe }}
+  <div id="summary-container" style="display: none;">
+    <div style="
+      background: #f4f8fb;
+      border-radius: 10px;
+      padding: 1.2em 1em;
+      margin-top: 0.5em;
+      box-shadow: 0 2px 12px rgba(106,130,251,0.07);
+      border-left: 4px solid #6a82fb;
+      font-style: italic;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      height: 400px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    ">
+      <div id="summary-header" style="
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+        color: #333;
+        font-weight: 600;
+        flex-shrink: 0;
+        line-height: 1.2;
+      ">
+        <i id="summary-icon" class="graduation cap icon"
+          style="color: #6a82fb; font-size: 1em; vertical-align: middle;"></i>
+        <span id="summary-title" style="display: inline-flex; align-items: center;">AI
+          Summary</span>
+        <i class="help circle icon"
+          style="color: #6a82fb; cursor: pointer; font-size: 1.1rem; vertical-align: middle; align-items: center; justify-content: center; min-width: 1.1rem; min-height: 1.1rem;"
+          title="Disclaimer: The AI Summary is not a scientific research tool but a communication aid powered by a Large Language Model (LLM). It provides simplified summaries of scientific abstracts to enhance accessibility for non-specialists. While efforts are made to ensure accuracy, the outputs should not replace professional scientific interpretation or advice."
+          onclick="showDisclaimer()"></i>
+      </div>
+      <div id="summary-content" style="
+        word-wrap: break-word;
+        line-height: 1.5;
+        color: #555;
+        overflow: auto;
+        flex: 1;
+        padding-right: 0.5rem;
+      ">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+    </div>
   </div>
 </section>
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const mode = urlParams.get('mode');
 
-  // Get button elements (may be null if not rendered)
-  const showOriginalBtn = document.getElementById('show-original-btn');
-  const showSimpleBtn = document.getElementById('show-simple-btn');
-  const showAdvancedBtn = document.getElementById('show-advanced-btn');
-  const buttonContainer = document.getElementById('button-container');
-
-  // Get content elements
+  // Get elements
+  const summaryToggleBtn = document.getElementById('summary-toggle-btn');
+  const summaryBtnIcon = document.getElementById('summary-btn-icon');
+  const summaryBtnText = document.getElementById('summary-btn-text');
   const descContent = document.getElementById('description-content');
-  const simpleSummaryContent = document.getElementById('simple-summary-content');
-  const advancedSummaryContent = document.getElementById('advanced-summary-content');
-  const badge = document.getElementById('ai-badge');
+  const summaryContainer = document.getElementById('summary-container');
+  const summaryContent = document.getElementById('summary-content');
+  const summaryIcon = document.getElementById('summary-icon');
+  const summaryTitle = document.getElementById('summary-title');
+  const contentTypeHeading = document.getElementById('content-type-heading');
 
-  // Get heading elements
-  const contentTypeIcon = document.getElementById('content-type-icon');
-  const contentTypeTitle = document.getElementById('content-type-title');
+  // Summary content from server
+  const simpleSummary = `{{ simple_summary_abstract | safe }}`;
+  const advancedSummary = `{{ advanced_summary_abstract | safe }}`;
 
   // Check if summaries exist (from server-side)
   const hasSimpleSummary = {{ 'true' if has_simple_summary else 'false' }};
   const hasAdvancedSummary = {{ 'true' if has_advanced_summary else 'false' }};
 
-  // Current state tracking
-  let currentContent = 'original'; // 'original', 'simple', 'advanced'
+  // Current state tracking: 'original', 'advanced', 'simple'
+  let currentState = 'original';
 
-  // Function to update button visibility based on current content
-  function updateButtonVisibility() {
-    if (!buttonContainer) return; // No buttons if no summaries exist
+  // Function to update button and content based on current state
+  function updateDisplay() {
+    if (currentState === 'original') {
+      // Show original content, hide summary
+      descContent.style.display = 'block';
+      summaryContainer.style.display = 'none';
+      contentTypeHeading.style.display = 'flex'; // Show "Abstract" title
 
-    // Hide all buttons first
-    if (showOriginalBtn) showOriginalBtn.style.display = 'none';
-    if (showSimpleBtn) showSimpleBtn.style.display = 'none';
-    if (showAdvancedBtn) showAdvancedBtn.style.display = 'none';
+      // Set button to show next available summary
+      if (hasAdvancedSummary) {
+        summaryBtnIcon.className = 'graduation cap icon';
+        summaryBtnText.textContent = 'AI Summary';
+      } else if (hasSimpleSummary) {
+        summaryBtnIcon.className = 'lightbulb outline icon';
+        summaryBtnText.textContent = 'Simple AI Summary';
+      }
+    } else if (currentState === 'advanced') {
+      // Show advanced summary
+      descContent.style.display = 'none';
+      summaryContainer.style.display = 'block';
+      contentTypeHeading.style.display = 'none'; // Hide "Abstract" title
+      summaryIcon.className = 'graduation cap icon';
+      summaryTitle.textContent = 'AI Summary';
+      summaryContent.innerHTML = advancedSummary;
 
-    // Show appropriate buttons based on current content and what's available
-    if (currentContent === 'original') {
-      if (showSimpleBtn && hasSimpleSummary) showSimpleBtn.style.display = 'inline-block';
-      if (showAdvancedBtn && hasAdvancedSummary) showAdvancedBtn.style.display = 'inline-block';
-    } else if (currentContent === 'simple') {
-      if (showOriginalBtn) showOriginalBtn.style.display = 'inline-block';
-      if (showAdvancedBtn && hasAdvancedSummary) showAdvancedBtn.style.display = 'inline-block';
-    } else if (currentContent === 'advanced') {
-      if (showOriginalBtn) showOriginalBtn.style.display = 'inline-block';
-      if (showSimpleBtn && hasSimpleSummary) showSimpleBtn.style.display = 'inline-block';
+      // Reset scroll position to top
+      summaryContent.scrollTop = 0;
+
+      // Set button for next action
+      if (hasSimpleSummary) {
+        summaryBtnIcon.className = 'lightbulb outline icon';
+        summaryBtnText.textContent = 'Simple AI Summary';
+      } else {
+        summaryBtnIcon.className = 'times icon';
+        summaryBtnText.textContent = 'Close';
+      }
+    } else if (currentState === 'simple') {
+      // Show simple summary
+      descContent.style.display = 'none';
+      summaryContainer.style.display = 'block';
+      contentTypeHeading.style.display = 'none'; // Hide "Abstract" title
+      summaryIcon.className = 'lightbulb outline icon';
+      summaryTitle.textContent = 'Simple AI Summary';
+      summaryContent.innerHTML = simpleSummary;
+
+      // Reset scroll position to top
+      summaryContent.scrollTop = 0;
+
+      // Set button to close
+      summaryBtnIcon.className = 'times icon';
+      summaryBtnText.textContent = 'Close';
     }
   }
 
-  // Function to show content with smooth transition
-  function showContent(contentType) {
-    const allContents = [descContent, simpleSummaryContent, advancedSummaryContent];
-
-    // Hide all content first
-    allContents.forEach(content => {
-      content.style.opacity = 0;
-      content.style.transform = 'translateY(-20px)';
-    });
-
-    setTimeout(() => {
-      // Hide all content
-      allContents.forEach(content => {
-        content.style.display = 'none';
-      });
-
-      // Show selected content
-      let targetContent;
-      if (contentType === 'original') {
-        targetContent = descContent;
-        badge.style.display = 'none';
-        contentTypeIcon.className = 'file alternate outline icon';
-        contentTypeTitle.textContent = 'Original Abstract';
-      } else if (contentType === 'simple') {
-        targetContent = simpleSummaryContent;
-        badge.style.display = 'inline-block';
-        contentTypeIcon.className = 'lightbulb outline icon';
-        contentTypeTitle.textContent = 'Simple Abstract Summary';
-      } else if (contentType === 'advanced') {
-        targetContent = advancedSummaryContent;
-        badge.style.display = 'inline-block';
-        contentTypeIcon.className = 'graduation cap icon';
-        contentTypeTitle.textContent = 'Advanced Abstract Summary';
+  // Cycling logic
+  function cycleSummary() {
+    if (currentState === 'original') {
+      // From original, go to advanced if available, otherwise simple
+      if (hasAdvancedSummary) {
+        currentState = 'advanced';
+      } else if (hasSimpleSummary) {
+        currentState = 'simple';
       }
+    } else if (currentState === 'advanced') {
+      // From advanced, go to simple if available, otherwise close
+      if (hasSimpleSummary) {
+        currentState = 'simple';
+      } else {
+        currentState = 'original';
+      }
+    } else if (currentState === 'simple') {
+      // From simple, always close
+      currentState = 'original';
+    }
 
-      targetContent.style.display = 'block';
-      setTimeout(() => {
-        targetContent.style.opacity = 1;
-        targetContent.style.transform = 'translateY(0)';
-      }, 10);
-    }, 400);
-
-    currentContent = contentType;
-    updateButtonVisibility();
+    updateDisplay();
   }
 
-  // Event listeners for buttons (only if they exist)
-  if (showOriginalBtn) {
-    showOriginalBtn.addEventListener('click', () => showContent('original'));
-  }
-  if (showSimpleBtn) {
-    showSimpleBtn.addEventListener('click', () => showContent('simple'));
-  }
-  if (showAdvancedBtn) {
-    showAdvancedBtn.addEventListener('click', () => showContent('advanced'));
+  // Disclaimer function
+  function showDisclaimer() {
+    alert('Disclaimer: The AI Summary is not a scientific research tool but a communication aid powered by a Large Language Model (LLM). It provides simplified summaries of scientific abstracts to enhance accessibility for non-specialists. While efforts are made to ensure accuracy, the outputs should not replace professional scientific interpretation or advice.');
   }
 
-  // Handle beginner mode
+  // Event listener for button
+  if (summaryToggleBtn) {
+    summaryToggleBtn.addEventListener('click', cycleSummary);
+  }
+
+  // Initialize display
+  updateDisplay();
+
+  // Handle beginner mode (optional - can be removed if not needed)
   if (mode === 'beginner' && hasSimpleSummary) {
     // In beginner mode, show simple summary by default
-    currentContent = 'simple';
-    showContent('simple');
-  } else {
-    // Default: show original abstract with appropriate buttons
-    currentContent = 'original';
-    updateButtonVisibility();
+    currentState = 'simple';
+    updateDisplay();
   }
 </script>
 {% endif %}

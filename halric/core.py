@@ -27,7 +27,7 @@ def get_advanced_summary_abstract(description):
               "content": "description: " + description + 
                             '''
                                 Summarize the article in about 200 words by answering these questions. 
-                                Format the response strictly as raw HTML snippets that can be inserted directly into TinyMCE (no <!DOCTYPE>, <html>, <head>, or <body> tags). Use <h2> for headings, <p> for paragraphs, and <ul>/<li> for lists.
+                                Format the response strictly as raw HTML snippets that can be inserted directly into TinyMCE (no <!DOCTYPE>, <html>, <head>, or <body> tags). Use <h3> for headings, <p> for paragraphs, and <ul>/<li> for lists.
                                 1. What is the main topic or problem being studied?
                                 2. What did the researchers discover or conclude?
                                 3. How might this matter to students or everyday life?
@@ -70,11 +70,13 @@ def get_simple_summary_abstract(description):
               "role": "user",
               "content": "description: " + description + 
                             '''
-                                Summarize the article in a concise manner, focusing on the key points and main ideas. 
-                                Format the response strictly as raw HTML snippets that can be inserted directly into TinyMCE (no <!DOCTYPE>, <html>, <head>, or <body> tags). Use <h2> for headings, <p> for paragraphs, and <ul>/<li> for lists.
-                                Use clear and straightforward language to ensure the summary is easy to understand. 
-                                
-                                Generate with 100 words
+                                Summarize the following abstract by answering these questions in simple, everyday terms:
+                                Format the response strictly as raw HTML snippets that can be inserted directly into TinyMCE (no <!DOCTYPE>, <html>, <head>, or <body> tags). Use <h3> for headings, <p> for paragraphs, and <ul>/<li> for lists.
+                                1. What is this research about?
+                                2. What did the researchers learn or conclude?
+                                3. Why does this matter to people, students, or everyday life?
+                                At the end, explain the 3 most difficult concepts in a very simple way, like explaining something to a friend who doesn’t know scientific terms.
+                                Keep your response under 250 words.
                             '''
           }
       ],
