@@ -1,17 +1,13 @@
 import { i18next } from "@translations/invenio_app_rdm/i18next";
 import _get from "lodash/get";
 import _truncate from "lodash/truncate";
-import React, { useState, useEffect } from "react";
-import { Item, Label, Icon, Button } from "semantic-ui-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Item, Label, Icon, Button, Popup } from "semantic-ui-react";
 import { CompactStats } from "@js/invenio_app_rdm/components/CompactStats";
 import { DisplayPartOfCommunities } from "@js/invenio_app_rdm/components/DisplayPartOfCommunities";
 import { SearchItemCreators } from "@js/invenio_app_rdm/utils";
 
 export default function RecordsResultsListItem(props) {
-  const [currentAbstractType, setCurrentAbstractType] = useState('original');
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [animationClass, setAnimationClass] = useState('');
-  
   const uniqueViews = _get(props.result, "stats.all_versions.unique_views", 0);
   const uniqueDownloads = _get(props.result, "stats.all_versions.unique_downloads", 0);
   const publishingInformation = _get(props.result, "ui.publishing_information.journal", "");
@@ -23,28 +19,42 @@ export default function RecordsResultsListItem(props) {
   const hasAdvancedAbstract = advancedAbstract && advancedAbstract.trim();
   const hasSummaries = hasSimpleAbstract || hasAdvancedAbstract;
 
+  const [currentAbstractType, setCurrentAbstractType] = useState('original');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [animationClass, setAnimationClass] = useState('');
+  const contentRef = useRef(null);
+
   useEffect(() => {
     if (isExpanded) {
       setAnimationClass('animate-in');
     }
   }, [isExpanded]);
 
+  // Reset scroll position when abstract type changes
+  useEffect(() => {
+    if (contentRef.current && currentAbstractType !== 'original') {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [currentAbstractType]);
+
   const handleAbstractTypeChange = () => {
     if (currentAbstractType === 'original') {
-      if (hasSimpleAbstract) {
+      // From original state, always go to advanced first if available
+      if (hasAdvancedAbstract) {
+        setCurrentAbstractType('advanced');
+        setIsExpanded(true);
+        setAnimationClass('');
+        setTimeout(() => setAnimationClass('animate-in'), 10);
+      } else if (hasSimpleAbstract) {
         setCurrentAbstractType('simple');
         setIsExpanded(true);
         setAnimationClass('');
         setTimeout(() => setAnimationClass('animate-in'), 10);
-      } else if (hasAdvancedAbstract) {
-        setCurrentAbstractType('advanced');
-        setIsExpanded(true);
-        setAnimationClass('');
-        setTimeout(() => setAnimationClass('animate-in'), 10);
       }
-    } else if (currentAbstractType === 'simple') {
-      if (hasAdvancedAbstract) {
-        setCurrentAbstractType('advanced');
+    } else if (currentAbstractType === 'advanced') {
+      // From advanced, go to simple if available, otherwise close
+      if (hasSimpleAbstract) {
+        setCurrentAbstractType('simple');
         setAnimationClass('');
         setTimeout(() => setAnimationClass('animate-in'), 10);
       } else {
@@ -52,7 +62,8 @@ export default function RecordsResultsListItem(props) {
         setIsExpanded(false);
         setAnimationClass('');
       }
-    } else if (currentAbstractType === 'advanced') {
+    } else if (currentAbstractType === 'simple') {
+      // From simple, always close
       setCurrentAbstractType('original');
       setIsExpanded(false);
       setAnimationClass('');
@@ -61,22 +72,24 @@ export default function RecordsResultsListItem(props) {
 
   const getButtonContent = () => {
     if (currentAbstractType === 'original') {
-      if (hasSimpleAbstract) {
-        return {
-          icon: 'lightbulb outline',
-          text: 'Simple Abstract Summary'
-        };
-      } else if (hasAdvancedAbstract) {
-        return {
-          icon: 'graduation cap',
-          text: 'Advanced Abstract Summary'
-        };
-      }
-    } else if (currentAbstractType === 'simple') {
+      // Show "AI Summary" button to start the cycle
       if (hasAdvancedAbstract) {
         return {
           icon: 'graduation cap',
-          text: 'Advanced Abstract Summary'
+          text: 'AI Summary'
+        };
+      } else if (hasSimpleAbstract) {
+        return {
+          icon: 'lightbulb outline',
+          text: 'Simple AI Summary'
+        };
+      }
+    } else if (currentAbstractType === 'advanced') {
+      // From advanced, show "Simple AI Summary" if available, otherwise "Close"
+      if (hasSimpleAbstract) {
+        return {
+          icon: 'lightbulb outline',
+          text: 'Simple AI Summary'
         };
       } else {
         return {
@@ -84,7 +97,8 @@ export default function RecordsResultsListItem(props) {
           text: 'Close'
         };
       }
-    } else if (currentAbstractType === 'advanced') {
+    } else if (currentAbstractType === 'simple') {
+      // From simple, always show "Close"
       return {
         icon: 'times',
         text: 'Close'
@@ -118,9 +132,9 @@ export default function RecordsResultsListItem(props) {
   const getAbstractTitle = () => {
     switch (currentAbstractType) {
       case 'simple':
-        return 'Simple Abstract Summary';
+        return 'Simple AI Summary';
       case 'advanced':
-        return 'Advanced Abstract Summary';
+        return 'AI Summary';
       default:
         return 'Original Abstract';
     }
@@ -157,12 +171,12 @@ export default function RecordsResultsListItem(props) {
           <div style={{ marginBottom: '1rem' }}>
             {_truncate(props.descriptionStripped, { length: 350 })}
           </div>
-          
+
           {hasSummaries && (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.3rem', 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
               marginBottom: '0.5rem',
               flexWrap: 'wrap'
             }}>
@@ -172,9 +186,9 @@ export default function RecordsResultsListItem(props) {
                 color="blue"
                 onClick={handleAbstractTypeChange}
                 className="abstract-button"
-                style={{ 
-                  fontSize: '0.7rem', 
-                  padding: '0.4em 0.6em',
+                style={{
+                  fontSize: '0.7rem',
+                  padding: '0.8em 1.8em',
                   minHeight: 'auto'
                 }}
               >
@@ -198,32 +212,63 @@ export default function RecordsResultsListItem(props) {
                 transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: animationClass === 'animate-in' ? 'translateY(0)' : 'translateY(20px)',
                 opacity: animationClass === 'animate-in' ? 1 : 0,
-                maxHeight: isExpanded ? '500px' : '0',
-                overflow: 'hidden'
+                height: '400px', // Increased height from 200px to 280px
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem', 
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
                 marginBottom: '0.8rem',
                 color: '#333',
-                fontWeight: '600'
+                fontWeight: '600',
+                flexShrink: 0, // Prevent header from shrinking
+                lineHeight: '1.2'
               }}>
-                <Icon name={getAbstractIcon()} style={{ color: '#6a82fb' }} />
-                <span>{getAbstractTitle()}</span>
-                <Icon name="magic" style={{ color: '#6a82fb' }} />
-                <span
-                  className="ai-generated-badge"
-                >
-                  AI Generated
-                </span>
+                <Icon name={getAbstractIcon()} style={{ color: '#6a82fb', fontSize: '1em', verticalAlign: 'middle' }} />
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>{getAbstractTitle()}</span>
+                <Popup
+                  trigger={
+                    <Icon
+                      name="help circle"
+                      style={{
+                        color: '#6a82fb',
+                        cursor: 'pointer',
+                        fontSize: '1.1rem',
+                        verticalAlign: 'middle',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: '1.1rem',
+                        minHeight: '1.1rem'
+                      }}
+                    />
+                  }
+                  content={
+                    <div style={{ maxWidth: '300px' }}>
+                      <strong>Disclaimer</strong>
+                      <br /><br />
+                      Disclaimer: The AI Summary is not a scientific research tool but a communication aid powered by a Large Language Model (LLM). It provides simplified summaries of scientific abstracts to enhance accessibility for non-specialists. While efforts are made to ensure accuracy, the outputs should not replace professional scientific interpretation or advice.
+                    </div>
+                  }
+                  position="top center"
+                  wide="very"
+                  hoverable
+                  style={{ fontSize: '0.85rem' }}
+                />
               </div>
-              <div style={{ 
+              <div style={{
                 wordWrap: 'break-word',
                 lineHeight: '1.5',
-                color: '#555'
-              }}>
+                color: '#555',
+                overflow: 'auto', // Make content scrollable
+                flex: 1, // Take remaining space
+                paddingRight: '0.5rem' // Add some padding for scrollbar
+              }}
+                ref={contentRef}
+              >
                 <span dangerouslySetInnerHTML={{ __html: getCurrentAbstractContent() }} />
               </div>
             </div>
